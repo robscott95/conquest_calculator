@@ -8,7 +8,6 @@ from common_util import show_special_abilities_block
 
 def show():
     st.header("Active unit:")
-    st.session_state.action_type = st.radio("Action:", ["Clash", "Volley"])
 
     # Collapsible section for Unit Stats
     with st.expander("Unit Stats", expanded=True):
@@ -28,6 +27,7 @@ def show():
     # Collapsible section for Special Abilities
     with st.expander("Special Abilities", expanded=True):
         show_special_abilities_block("active")
+    st.session_state.action_type = st.radio("Action:", ["Clash", "Volley"])
     
     # Calculation and display area outside of collapsible context, responsive to input changes
     show_summary_block(st.session_state.target_attack, st.session_state.no_of_attacks, st.session_state.no_of_stands_engaged, st.session_state.no_of_stands_all)

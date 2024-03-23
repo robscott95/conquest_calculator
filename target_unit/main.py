@@ -7,7 +7,7 @@ from target_unit.summary_block import show as show_summary_block
 from target_unit.roll_stats_block import show as show_roll_stats_block
 
 def show():
-    st.header("Target unit's stats:")
+    st.header("Target unit:")
 
     # Collapsible section for Unit Stats
     with st.expander("Unit Stats", expanded=True):
