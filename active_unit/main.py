@@ -2,10 +2,9 @@
 import streamlit as st
 import json
 
-from util import calc_expected_hits, generate_pill_label
 from active_unit.summary_block import show as show_summary_block
 from active_unit.roll_stats_block import show as show_roll_stats_block
-from active_unit.special_abilities_block import show as show_special_abilities_block
+from common_util import show_special_abilities_block
 
 def show():
     st.header("Active unit's stat block:")
@@ -19,7 +18,7 @@ def show():
 
     # Collapsible section for Special Abilities
     with st.expander("Special Abilities", expanded=True):
-        show_special_abilities_block()
+        show_special_abilities_block("active")
     
     # Calculation and display area outside of collapsible context, responsive to input changes
     show_summary_block(target, no_of_attacks, no_of_stands_engaged, no_of_stands_all)

@@ -1,5 +1,5 @@
 import streamlit as st
-from util import generate_pill_label
+from common_util import generate_pill_label
 
 def show(target, no_of_die, no_of_stands_engaged, no_of_stands_all):
     st.subheader('Stats summary:')

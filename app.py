@@ -1,5 +1,7 @@
 import streamlit as st
 from active_unit.main import show as show_active_unit
+from target_unit.main import show as show_target_unit
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -10,4 +12,7 @@ st.title('Conquest Wound Calculator')
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    unit_stats_data = show_active_unit()
+    show_active_unit()
+
+with col2:
+    show_target_unit()
