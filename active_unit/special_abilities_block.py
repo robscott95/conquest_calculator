@@ -1,4 +1,11 @@
 import streamlit as st
+import json
+
+if 'special_abilities_values' not in st.session_state:
+    with open('active_unit/special_abilities.json', 'r') as f:
+        st.session_state.special_abilities_values = json.load(f)
+        for ability in st.session_state.special_abilities_values.keys():
+            st.session_state.special_abilities_values[ability]["is_modified"] = False
 
 def show():
     # Always visible

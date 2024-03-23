@@ -7,14 +7,6 @@ from active_unit.summary_block import show as show_summary_block
 from active_unit.roll_stats_block import show as show_roll_stats_block
 from active_unit.special_abilities_block import show as show_special_abilities_block
 
-
-# Load and initialize session state for storing values and tracking modifications if not already present
-if 'special_abilities_values' not in st.session_state:
-    with open('active_unit/special_abilities.json', 'r') as f:
-        st.session_state.special_abilities_values = json.load(f)
-        for ability in st.session_state.special_abilities_values.keys():
-            st.session_state.special_abilities_values[ability]["is_modified"] = False
-
 def show():
     st.header("Active unit's stat block:")
 
