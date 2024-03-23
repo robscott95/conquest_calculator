@@ -1,9 +1,7 @@
 # unit_stats.py
 import streamlit as st
-import json
 
-from active_unit.summary_block import show as show_summary_block
-from common_util import show_special_abilities_block
+from special_abilities import show_special_abilities_block
 
 def show():
     st.header("Active unit:")

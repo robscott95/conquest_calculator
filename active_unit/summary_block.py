@@ -1,11 +1,11 @@
 import streamlit as st
-from common_util import show_special_ability_summary_block
+from special_abilities import show_special_ability_summary_block
 
-def show(target, no_of_die, no_of_stands_engaged, no_of_stands_all):
+def show(target, number_of_attacks, number_of_attacking_stands, number_of_supporting_stands, active_special_abilities):
     st.subheader('Active Unit summary:')
     st.write("Target value: ", target)
-    st.write("Attack/Barrage: ", no_of_die)
-    st.write("Engaged stands: ", no_of_stands_engaged)
-    st.write("Supporting stands: ", no_of_stands_all - no_of_stands_engaged)
+    st.write("Number of attacks: ", number_of_attacks)
+    st.write("Engaged stands: ", number_of_attacking_stands)
+    st.write("Supporting stands: ", number_of_supporting_stands)
     
     show_special_ability_summary_block("active")
