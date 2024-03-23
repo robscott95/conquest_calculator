@@ -34,8 +34,9 @@ class EngagementDataModel:
         self.target_input_special_abilities = target_input_special_abilities
 
         self.active_input_supporting_stands = active_input_stands - active_input_attacking_stands
-
-    def get_target_regiment_size_resolve_bonus(self):
+    
+    @property
+    def target_regiment_size_resolve_bonus(self):
         if 4 <= self.target_input_stands <= 6:
             return 1
         elif 7 <= self.target_input_stands <= 9:
@@ -67,8 +68,27 @@ class EngagementDataModel:
         return self._calc_expected_success(self.active_number_of_attacks, self.active_input_target_value)
 
     @property
-    def expected_wounds(self):
-        return self._calc_expected_success(self.expected_hits, self.target_input_defense_value, invert_p=True)
+    def expected_wounds_from_hits(self):
+        final_defense_value = max(self.target_input_defense_value, self.target_input_evasion_value)
+        return self._calc_expected_success(self.expected_hits, final_defense_value, invert_p=True)
+    
+    @property
+    def expected_wounds_from_morale(self):
+        if self.input_action_type == "Clash":
+            resolve_target = self.target_input_resolve_value + self.target_regiment_size_resolve_bonus
+            return self._calc_expected_success(self.expected_wounds_from_hits, resolve_target, invert_p=True)
+        elif self.input_action_type == "Volley":
+            return 0
+        
+
+    @property
+    def expected_wounds_from_all(self):
+        hit_wounds = self.expected_wounds_from_hits
+        morale_wounds = self.expected_wounds_from_morale
+
+        return hit_wounds + morale_wounds
+    
+
 
 
 

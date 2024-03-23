@@ -53,7 +53,7 @@ with col2:
         engagement_data.target_input_defense_value,
         engagement_data.target_input_evasion_value,
         engagement_data.target_input_resolve_value,
-        engagement_data.get_target_regiment_size_resolve_bonus(),
+        engagement_data.target_regiment_size_resolve_bonus,
     )
 
 with col3:
