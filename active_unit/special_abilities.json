@@ -1,0 +1,10 @@
+{
+    "cleave": {"label": "Cleave (X)", "value": 0},
+    "target_mod": {"label": "Clash (+X) / Barrage (+X)", "value": 0},
+    "support_mod": {"label": "Support (X)", "value": 0},
+    "is_reroll_1s": {"label": "Re-roll 1's", "value": false},
+    "is_reroll_6s": {"label": "Re-roll 6's", "value": false},
+    "is_reroll_misses": {"label": "Re-roll Misses", "value": false},
+    "is_reroll_hits": {"label": "Re-roll Hits", "value": false},
+    "is_double_hits_on_1s": {"label": "Double hits on 1's", "value": false}
+}
