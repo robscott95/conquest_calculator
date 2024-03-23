@@ -44,9 +44,9 @@ def show_special_abilities_block(unit_type):
         current_value = st.session_state.special_abilities[unit_type][key]['value']
         
         if input_type == 'number':
-            new_value = st.number_input(label, min_value=0, value=current_value, key=widget_key)
+            new_value = st.number_input(label, min_value=0, key=widget_key)
         elif input_type == 'checkbox':
-            new_value = st.checkbox(label, value=current_value, key=widget_key)
+            new_value = st.checkbox(label, key=widget_key)
         
         if current_value != new_value:
             st.session_state.special_abilities[unit_type][key]['value'] = new_value
@@ -66,6 +66,8 @@ def show_special_abilities_block(unit_type):
     # Always visible checkbox for "Leader"
     if unit_type == "active":
         st.session_state.is_leader = st.checkbox('Leader', value=True)
+    if unit_type == "target":
+        st.session_state.is_reroll_morale = st.checkbox('Re-roll morale saves', value=False)
 
 def show_special_ability_summary_block(unit_type):
     container = st.container()  # Using container to group pills

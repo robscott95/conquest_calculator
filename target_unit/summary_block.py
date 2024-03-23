@@ -1,14 +1,23 @@
 import streamlit as st
 from common_util import generate_pill_label
 
+def calculate_additional_resolve(number_of_stands):
+    if 4 <= number_of_stands <= 6:
+        return 1
+    elif 7 <= number_of_stands <= 9:
+        return 2
+    elif 9 <= number_of_stands:
+        return 3
+    else:
+        return 0
+
 def show(defense, evasion, resolve, number_of_stands):
     st.subheader('Stats summary:')
-    print(st.session_state.special_abilities)
-    final_defense = defense - st.session_state.special_abilities['active']['cleave']['value']
-    st.write("Defense: ", final_defense)
+    st.session_state.final_defense = defense - st.session_state.special_abilities['active']['cleave']['value']
+    st.write("Defense: ", st.session_state.final_defense)
     st.write("Evasion: ", evasion)
-    final_resolve = number_of_stands * 1
-    st.write("Resolve: ", resolve)
+    st.session_state.final_resolve = min(resolve + calculate_additional_resolve(number_of_stands), 5)
+    st.write("Resolve: ", st.session_state.final_resolve)
     
     container = st.container()  # Using container to group pills
     container.write("Special abilities: ")

@@ -13,7 +13,15 @@ def show():
         support_mod = 0
     support_to_hits = ((st.session_state.no_of_stands_all - st.session_state.no_of_stands_engaged) * support_mod)
     number_of_attacks = (st.session_state.no_of_attacks * st.session_state.no_of_stands_engaged) + st.session_state.is_leader + support_to_hits
+    expected_hits = calc_expected_hits(number_of_attacks, st.session_state.target_attack, st.session_state.special_abilities)
     st.write('Number of attacks:', number_of_attacks)
+    st.write('Expected number of hits:', expected_hits)
+
+
+    st.subheader('Defense roll:')
+    # calc number of die rolled
+    # check if we need support at 1 or 0
+    st.write("Expected wounds: ", expected_hits * (1-(st.session_state.final_defense/6))) 
 
     st.write('Expected number of hits:', calc_expected_hits(number_of_attacks, st.session_state.target_attack, st.session_state.special_abilities))
 
