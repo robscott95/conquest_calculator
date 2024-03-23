@@ -1,6 +1,7 @@
 import streamlit as st
 from active_unit.main import show as show_active_unit
 from target_unit.main import show as show_target_unit
+from results.main import show as show_results
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -16,3 +17,6 @@ with col1:
 
 with col2:
     show_target_unit()
+
+with col3:
+    show_results()
