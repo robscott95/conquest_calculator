@@ -31,4 +31,3 @@ def show():
     
     # Calculation and display area outside of collapsible context, responsive to input changes
     show_summary_block(st.session_state.target_attack, st.session_state.no_of_attacks, st.session_state.no_of_stands_engaged, st.session_state.no_of_stands_all)
-    show_roll_stats_block(st.session_state.no_of_attacks, st.session_state.no_of_stands_all, st.session_state.no_of_stands_engaged, st.session_state.action_type)
