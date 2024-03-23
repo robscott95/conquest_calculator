@@ -1,5 +1,5 @@
 import streamlit as st
-from common_util import generate_pill_label
+from common_util import show_special_ability_summary_block
 
 def show(target, no_of_die, no_of_stands_engaged, no_of_stands_all):
     st.subheader('Stats summary:')
@@ -8,13 +8,4 @@ def show(target, no_of_die, no_of_stands_engaged, no_of_stands_all):
     st.write("Engaged stands: ", no_of_stands_engaged)
     st.write("Supporting stands: ", no_of_stands_all - no_of_stands_engaged)
     
-    container = st.container()  # Using container to group pills
-    container.write("Special abilities: ")
-
-    for ability, details in st.session_state.special_abilities_values.items():
-        if details['is_modified']:
-            # Replace (X) or (+X) with the actual value
-            formatted_label = details['label'].replace('(X)', f'({details["value"]})').replace('(+X)', f'(+{details["value"]})')
-            
-            # Display each modified ability as a pi
-            container.markdown(generate_pill_label(formatted_label), unsafe_allow_html=True)
+    show_special_ability_summary_block("active")

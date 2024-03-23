@@ -1,5 +1,5 @@
 import streamlit as st
-from common_util import calc_expected_hits
+from stats_util import calc_expected_hits
 
 def show(no_of_attacks, no_of_stands_all, no_of_stands_engaged):
     st.subheader('Roll stats:')
