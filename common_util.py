@@ -22,6 +22,7 @@ def generate_pill_label(text):
 # def initialize_
 
 def show_special_abilities_block(unit_type):
+    # Load special abilities from a JSON file if not already loaded
     if 'special_abilities' not in st.session_state:
         st.session_state.special_abilities = {}
 
@@ -31,40 +32,38 @@ def show_special_abilities_block(unit_type):
             for ability in st.session_state.special_abilities[unit_type].keys():
                 st.session_state.special_abilities[unit_type][ability]["is_modified"] = False
 
-    # Function to create an input widget based on the type and update session state
+    # Multiselect for choosing special abilities
+    labels_to_keys = {details['label']: key for key, details in st.session_state.special_abilities[unit_type].items()}
+    abilities_labels = list(labels_to_keys.keys())
+    selected_abilities = st.multiselect("Choose special abilities:", abilities_labels, key=f"{unit_type}_multiselect")
+    selected_abilities = [labels_to_keys[ability] for ability in selected_abilities]
+
+    # Function to create an input widget for each ability
     def special_ability_input(key, label, input_type='number'):
-        widget_key = f"{unit_type}_{key}"  # Example of making the key more unique
+        widget_key = f"{unit_type}_{key}"
         current_value = st.session_state.special_abilities[unit_type][key]['value']
+        
         if input_type == 'number':
-            # Use the modified widget_key
-            new_value = st.number_input(label, min_value=0, key=widget_key)
+            new_value = st.number_input(label, min_value=0, value=current_value, key=widget_key)
         elif input_type == 'checkbox':
-            # Use the modified widget_key
-            new_value = st.checkbox(label, key=widget_key)
+            new_value = st.checkbox(label, value=current_value, key=widget_key)
         
         if current_value != new_value:
             st.session_state.special_abilities[unit_type][key]['value'] = new_value
-            if new_value != 0:
-                st.session_state.special_abilities[unit_type][key]['is_modified'] = True
-            else:
-                st.session_state.special_abilities[unit_type][key]['is_modified'] = False
+            st.session_state.special_abilities[unit_type][key]['is_modified'] = True
 
-    # Define the search term input
-    search_term = st.text_input("Search...", key=f"{unit_type}_search").lower().strip()
+    # Display input widgets for selected or modified abilities
+    for ability in selected_abilities:
+        details = st.session_state.special_abilities[unit_type][ability]
+        input_type = 'checkbox' if isinstance(details['value'], bool) else 'number'
+        special_ability_input(ability, details['label'], input_type=input_type)
 
-    # Display widgets dynamically based on search input or if they have been modified
-    if len(search_term) > 0:
-        for ability, details in st.session_state.special_abilities[unit_type].items():
-            if search_term in ability.lower() or search_term in details['label'].lower() or details['is_modified']:
-                input_type = 'checkbox' if isinstance(details['value'], bool) else 'number'
-                special_ability_input(ability, details['label'], input_type=input_type)
-    else:
-        # Show modified options by default
-        for ability, details in st.session_state.special_abilities[unit_type].items():
-            if details['is_modified']:
-                input_type = 'checkbox' if isinstance(details['value'], bool) else 'number'
-                special_ability_input(ability, details['label'], input_type=input_type)
-    # Always visible
+    for ability, details in st.session_state.special_abilities[unit_type].items():
+        if details['is_modified'] and ability not in selected_abilities:
+            input_type = 'checkbox' if isinstance(details['value'], bool) else 'number'
+            special_ability_input(ability, details['label'], input_type=input_type)
+
+    # Always visible checkbox for "Leader"
     if unit_type == "active":
         st.session_state.is_leader = st.checkbox('Leader', value=True)
 
