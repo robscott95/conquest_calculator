@@ -1,5 +1,5 @@
 import streamlit as st
-from results.stats_util import calc_expected_hits
+from results.stats_util import calc_expected_hits, calc_expected_wounds
 
 def show():
     st.header("Results")
@@ -21,7 +21,5 @@ def show():
     st.subheader('Defense roll:')
     # calc number of die rolled
     # check if we need support at 1 or 0
-    st.write("Expected wounds: ", expected_hits * (1-(st.session_state.final_defense/6))) 
-
-    st.write('Expected number of hits:', calc_expected_hits(number_of_attacks, st.session_state.target_attack, st.session_state.special_abilities))
+    # st.write("Expected wounds: ", calc_expected_wounds(expected_hits, )) 
 

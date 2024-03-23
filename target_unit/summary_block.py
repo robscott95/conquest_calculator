@@ -12,7 +12,7 @@ def calculate_additional_resolve(number_of_stands):
         return 0
 
 def show(defense, evasion, resolve, number_of_stands):
-    st.subheader('Stats summary:')
+    st.subheader('Target Unit summary:')
     st.session_state.final_defense = defense - st.session_state.special_abilities['active']['cleave']['value']
     st.write("Defense: ", st.session_state.final_defense)
     st.write("Evasion: ", evasion)

@@ -17,6 +17,3 @@ def show():
     # Collapsible section for Special Abilities
     with st.expander("Special Abilities", expanded=True):
         show_special_abilities_block("target")
-    
-    # # Calculation and display area outside of collapsible context, responsive to input changes
-    show_summary_block(st.session_state.defense, st.session_state.evasion, st.session_state.resolve, st.session_state.target_regiment_stands)
