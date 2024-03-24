@@ -32,7 +32,6 @@ class VisualizeRollEstimation:
         
         return fig
     
-    # TODO: Refactor the visualization part to another file
     @staticmethod
     def visualize_dice_outcomes(total_dice, successful_rolls, wounds_inflicted):
         colors = ['#AFE07D', '#F4CD54', '#FE8D64']
@@ -84,24 +83,6 @@ class VisualizeRollEstimation:
             hovertemplate='<b>Wounds</b>: %{text}<extra></extra>',
             textfont=dict(size=18, color='#0e1117', family='Droid Sans')
         ))
-        
-        # Customize layout to remove x-axis title and hide the legend
-            # Adjust layout for a snug fit
-        fig.update_layout(
-            barmode='stack',
-            xaxis=dict(title='', showticklabels=False, zeroline=False),
-            yaxis=dict(title='', showticklabels=False, zeroline=False),
-            margin=dict(l=0, r=0, t=0, b=0),  # Minimize margins
-            height=200,  # Adjust for a tighter fit vertically
-            paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
-            plot_bgcolor='rgba(0,0,0,0)',  # Transparent background
-            showlegend=False,
-            hoverlabel=dict(
-                bgcolor="white",
-                font_color='#0e1117',
-                font_size=13,
-            )
-        )
 
         # fig.update_yaxes(automargin=True)
         fig.update_traces(marker_line_width=0)    # Optional: Adjust bar thickness and plot height for a tighter fit
@@ -132,14 +113,16 @@ class VisualizeRollEstimation:
         fig = make_subplots(rows=2, cols=1, subplot_titles=titles, vertical_spacing=0.15)
         
         # Generate and add each subplot. Adjust these parameters as per your actual data
-        action1_fig = self.visualize_hits()
-        action2_fig = self.visualize_morale()
+        hits_fig = self.visualize_hits()
+        morale_fig = self.visualize_morale()
         
         # Since we cannot directly add figures to subplots, we extract data and layout from each and add to the main figure
-        for trace in action1_fig.data:
+        for trace in hits_fig.data:
             fig.add_trace(trace, row=1, col=1)
             
-        for trace in action2_fig.data:
+        for trace in morale_fig.data:
+            # remove traces
+            trace.showlegend = False  # Disable legend for this trace
             fig.add_trace(trace, row=2, col=1)
         
         # Update layout if necessary
@@ -155,12 +138,21 @@ class VisualizeRollEstimation:
             height=200,  # Adjust for a tighter fit vertically
             paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
             plot_bgcolor='rgba(0,0,0,0)',  # Transparent background
-            showlegend=False,
             hoverlabel=dict(
                 bgcolor="white",
                 font_color='black',
-                font_size=13,
-            )
+                font_size=20,
+            ),
+            dragmode=False,
+            legend=dict(
+                orientation="h",  # Makes the legend horizontal
+                xanchor="center",  # Anchors the legend to the center
+                x=0.5,  # Positions the legend in the center of the axis (0.5 on a scale of 0 to 1)
+                y=-0.2,  # Positions the legend below the x-axis. Adjust as needed.
+                yanchor="top"  # Anchors the y position of the legend from its top.
+            ),
+            legend_itemclick=False,
+            legend_itemdoubleclick=False,
         )
         # Apply layout of individual plots if needed, or make further adjustments
         

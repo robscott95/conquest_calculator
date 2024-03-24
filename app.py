@@ -45,7 +45,14 @@ engagement_data = EngagementDataModel(
 )
 
 fig = VisualizeRollEstimation(engagement_data).visualize_hits_and_morale()
-st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+config = {
+    'staticPlot': False,  # Allows hover effects but prevents zoom, pan, etc.
+    'scrollZoom': False,  # Disables zooming with scroll
+    'doubleClick': False,  # Disables zooming with double-click
+    'showLink': False,  # Hides the link to edit chart on Plotly,
+    'displayModeBar': False
+}
+st.plotly_chart(fig, use_container_width=True, config=config)
 
 col1, col2, col3 = st.columns(3)
 with col1:
