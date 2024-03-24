@@ -136,6 +136,7 @@ class EngagementDataModel:
         
         return fig
     
+    # TODO: Refactor the visualization part to another file
     @staticmethod
     def visualize_dice_outcomes(total_dice, successful_rolls, wounds_inflicted):
         colors = ['#AFE07D', '#F4CD54', '#FE8D64']
