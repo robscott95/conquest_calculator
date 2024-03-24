@@ -46,13 +46,39 @@ class EngagementDataModel:
         else:
             return 0
         
-    def _calc_expected_success(self, number_of_die, target, invert_p=False):
-        p = (target/6)
+    def _calc_expected_success(self, number_of_die, target, invert_p=False, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
+        p_success = target / 6
+        p_fail = 1 - p_success
+
         if invert_p:
-            p = 1-p
-        expected_success = number_of_die * p
+            p_success, p_fail = p_fail, p_success
+
+        # Adjust probabilities for rerolling 1s and 6s
+        if reroll_1s:
+            # If rerolling 1s, effectively reduce the failure probability by the chance of failing and then succeeding.
+            p_fail -= (1/6) * p_success
+            p_success += (1/6) * p_success
+
+        if reroll_6s:
+            # If rerolling 6s, effectively reduce the success probability by the chance of succeeding and then failing.
+            p_success -= (1/6) * p_fail
+            p_fail += (1/6) * p_fail
+
+        # Calculate initial expected successes and failures
+        expected_success = number_of_die * p_success
+        expected_fail = number_of_die * p_fail
+
+        # Adjust for rerolling hits or misses
+        if reroll_hits:
+            # Rerolling hits means taking the expected_success, applying the fail probability, and adding those successes back in
+            expected_success += expected_success * p_fail
+
+        if reroll_misses:
+            # Rerolling misses means taking the expected_fail, applying the success probability, and adding those successes
+            expected_success += expected_fail * p_success
+
         return expected_success
-    
+
     @property
     def active_number_of_attacks(self):
         if self.input_action_type == "Clash":

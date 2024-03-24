@@ -3,25 +3,33 @@ import streamlit as st
 
 from special_abilities import show_special_abilities_block
 
-def show():
+def show(
+    initial_target_attack=3,
+    initial_no_of_attacks=4,
+    initial_no_of_stands_all=3,
+    initial_no_of_stands_engaged=3
+):
     st.header("Active unit:")
-
     # Collapsible section for Unit Stats
     with st.expander("Unit Stats", expanded=True):
-        if 'target_attack' not in st.session_state:
-            st.session_state.target_attack = 3
-        if 'no_of_attacks' not in st.session_state:
-            st.session_state.no_of_attacks = 4
-        if 'no_of_stands_all' not in st.session_state:
-            st.session_state.no_of_stands_all = 3
-        if 'no_of_stands_engaged' not in st.session_state:
-            st.session_state.no_of_stands_engaged = 3
+        target_attack = st.slider('Target value', min_value=1, max_value=6, value=initial_target_attack)
+        no_of_attacks = st.slider('Attacks value', min_value=1, max_value=20, value=initial_no_of_attacks)
+        no_of_stands_all = st.slider('Stands', min_value=1, max_value=20, value=initial_no_of_stands_all)
+        no_of_stands_engaged = st.slider('Attacking Stands', min_value=0, max_value=no_of_stands_all, value=initial_no_of_stands_engaged)
 
-        st.session_state.target_attack = st.slider('Target value', min_value=1, max_value=6, value=st.session_state.target_attack)
-        st.session_state.no_of_attacks = st.slider('Number of attacks', min_value=1, max_value=20, value=st.session_state.no_of_attacks)
-        st.session_state.no_of_stands_all = st.slider('Stands', min_value=1, max_value=20, value=st.session_state.no_of_stands_all)
-        st.session_state.no_of_stands_engaged = st.slider('Attacking Stands', min_value=0, max_value=st.session_state.no_of_stands_all, value=st.session_state.no_of_stands_engaged)
     # Collapsible section for Special Abilities
+    # Assuming show_special_abilities_block returns a dict or similar structure of the selected abilities
     with st.expander("Special Abilities", expanded=True):
-        show_special_abilities_block("active")
-    st.session_state.action_type = st.radio("Action:", ["Clash", "Volley"])
+        special_abilities = show_special_abilities_block("active")
+
+    action_type = st.radio("Action:", ["Clash", "Volley"])
+
+    # Return all relevant values
+    return {
+        "active_input_target_value": target_attack,
+        "active_input_number_of_attacks_value": no_of_attacks,
+        "active_input_stands": no_of_stands_all,
+        "active_input_attacking_stands": no_of_stands_engaged,
+        "active_input_special_abilities": special_abilities,  # This depends on your implementation
+        "input_action_type": action_type
+    }

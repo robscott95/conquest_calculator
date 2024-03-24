@@ -19,24 +19,24 @@ col1, col2, col3 = st.columns(3)
 with st.sidebar:
     tab1, tab2 = st.tabs(["Active Unit", "Target Unit"])
     with tab1:
-        show_active_unit_input()
+        active_unit_input_data = show_active_unit_input()
     with tab2:
-        show_target_unit()
+        target_unit_input_data = show_target_unit()
 
 engagement_data = EngagementDataModel(
-    st.session_state.target_attack,
-    st.session_state.no_of_attacks,
-    st.session_state.no_of_stands_all,
-    st.session_state.no_of_stands_engaged,
+    active_unit_input_data['active_input_target_value'],
+    active_unit_input_data['active_input_number_of_attacks_value'],
+    active_unit_input_data['active_input_stands'],
+    active_unit_input_data['active_input_attacking_stands'],
     st.session_state.special_abilities['active'],
     st.session_state.is_leader,
-    st.session_state.defense,
-    st.session_state.evasion,
-    st.session_state.resolve,
-    st.session_state.target_regiment_stands,
+    target_unit_input_data['target_input_defense_value'],
+    target_unit_input_data['target_input_evasion_value'],
+    target_unit_input_data['target_input_resolve_value'],
+    target_unit_input_data['target_input_stands'],
     st.session_state.special_abilities['target'],
     st.session_state.is_reroll_morale,
-    st.session_state.action_type
+    active_unit_input_data['input_action_type']
 )
 
 with col1:
