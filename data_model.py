@@ -62,6 +62,26 @@ class EngagementDataModel:
             rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
         
         return rerolls_dict
+
+    def _get_rerolls_dict_morale(self):
+        rerolls_dict = {
+            key.replace("is_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "reroll" in key and ability.get("value") is True
+        }
+
+        if self.encounter_params['is_flank_attack']:
+            rerolls_dict['reroll_misses'] = {'value': True}
+        
+        # Apply negation logic
+        # If is_reroll_misses is True, negate is_reroll_6s
+        if 'reroll_misses' in rerolls_dict:
+            rerolls_dict.pop('reroll_6s', None)  # Remove 'reroll_6s' if it exists
+        
+        # If is_reroll_hits is True, negate is_reroll_1s
+        if 'reroll_hits' in rerolls_dict:
+            rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
+        
+        return rerolls_dict
         
     def _calc_expected_success(self, number_of_die, target, invert_p=False, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
         p_success = target / 6
@@ -114,13 +134,14 @@ class EngagementDataModel:
     
     @property
     def target_resolve(self):
-        if self.target_input_special_abilities['broken']:
-            return self.target_input_resolve_value
-        return self.target_input_resolve_value + self.target_regiment_size_resolve_bonus
+        resolve_value = self.target_input_resolve_value + self.target_regiment_size_resolve_bonus
+        if self.target_input_special_abilities['broken']['value']:
+            resolve_value = self.target_input_resolve_value
+        return min(resolve_value, 5)
 
     @property
     def active_target(self):
-        return self.active_input_target_value
+        return min(self.active_input_target_value, 5)
     
     @property
     def target_defense(self):
@@ -128,7 +149,8 @@ class EngagementDataModel:
         if self.active_input_special_abilities['cleave']['value'] > 0:
             defense_value -= self.active_input_special_abilities['cleave']['value']
 
-        return max(defense_value, self.target_input_evasion_value)
+        highest_defense = max(defense_value, self.target_input_evasion_value)
+        return min(highest_defense, 5)
 
     @property
     def expected_hits(self):
@@ -141,8 +163,9 @@ class EngagementDataModel:
     
     @property
     def expected_wounds_from_morale(self):
+        rerolls_params = self._get_rerolls_dict_morale()
         if self.encounter_params['action_type'] == "Clash":
-            expected_wounds = self._calc_expected_success(self.expected_wounds_from_hits, self.target_resolve, invert_p=True)
+            expected_wounds = self._calc_expected_success(self.expected_wounds_from_hits, self.target_resolve, invert_p=True, **rerolls_params)
         elif self.encounter_params['action_type'] == "Volley":
             expected_wounds = 0
         
