@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
+import math
 
 class EngagementDataModel:
     def __init__(
@@ -146,6 +146,10 @@ class EngagementDataModel:
     @property
     def target_defense(self):
         defense_value = self.target_input_defense_value
+
+        if self.target_input_special_abilities['shield']['value'] > 0 and not self.encounter_params['is_flank_attack']:
+            defense_value += self.target_input_special_abilities['shield']['value']
+
         if self.active_input_special_abilities['cleave']['value'] > 0:
             defense_value -= self.active_input_special_abilities['cleave']['value']
 
@@ -169,6 +173,9 @@ class EngagementDataModel:
         elif self.encounter_params['action_type'] == "Volley":
             expected_wounds = 0
         
+        if self.target_input_special_abilities['is_receive_half_morale_wounds']['value']:
+            expected_wounds = round(expected_wounds/2, 2)
+
         return expected_wounds
 
     @property
