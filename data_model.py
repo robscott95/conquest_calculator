@@ -102,13 +102,20 @@ class EngagementDataModel:
             support_mod =  max(self.active_input_special_abilities['support_mod']['value'], 1)
         elif self.encounter_params['action_type'] == "Volley":
             support_mod = 0
+        
         support_to_hits = (self.active_input_supporting_stands * support_mod)
         number_of_attacks = (self.active_input_number_of_attacks_value * self.active_input_attacking_stands)
         number_of_attacks = number_of_attacks + support_to_hits + self.active_input_special_abilities['is_leader']['value']
+
+        if self.active_input_special_abilities['is_double_hits_on_1s']['value']:
+            number_of_attacks += number_of_attacks * 1/6
+
         return number_of_attacks
     
     @property
     def target_resolve(self):
+        if self.target_input_special_abilities['broken']:
+            return self.target_input_resolve_value
         return self.target_input_resolve_value + self.target_regiment_size_resolve_bonus
 
     @property
@@ -135,9 +142,11 @@ class EngagementDataModel:
     @property
     def expected_wounds_from_morale(self):
         if self.encounter_params['action_type'] == "Clash":
-            return self._calc_expected_success(self.expected_wounds_from_hits, self.target_resolve, invert_p=True)
+            expected_wounds = self._calc_expected_success(self.expected_wounds_from_hits, self.target_resolve, invert_p=True)
         elif self.encounter_params['action_type'] == "Volley":
-            return 0
+            expected_wounds = 0
+        
+        return expected_wounds
 
     @property
     def expected_wounds_from_all(self):
