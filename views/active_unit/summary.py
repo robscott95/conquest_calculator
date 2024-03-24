@@ -9,4 +9,4 @@ def show(target, number_of_attacks, number_of_attacking_stands, number_of_suppor
         st.write("Engaged stands: ", number_of_attacking_stands)
         st.write("Supporting stands: ", number_of_supporting_stands)
         with st.container(border=True):
-            show_summary_special_abilities("active")
+            show_summary_special_abilities(active_special_abilities)

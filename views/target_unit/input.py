@@ -10,20 +10,18 @@ def show(
     initial_resolve=3,
     initial_target_regiment_stands=3
 ):
-    st.header("Target unit:")
-
     # Collapsible section for Unit Stats
-    with st.expander("Unit Stats", expanded=True):
+    with st.container(border=True):
+        st.header("Target Unit Stats")
         defense = st.slider('Defense', min_value=0, max_value=6, value=initial_defense)
         evasion = st.slider('Evasion', min_value=0, max_value=6, value=initial_evasion)
         resolve = st.slider('Resolve', min_value=0, max_value=6, value=initial_resolve)
         target_regiment_stands = st.slider('Stands', min_value=0, max_value=20, value=initial_target_regiment_stands)
 
     # Collapsible section for Special Abilities
-    with st.expander("Special Abilities", expanded=True):
-        # Assuming show_special_abilities_block function is adapted similarly for optional parameters
-        special_abilities = show_input_special_abilities("target")  # Adjust this based on actual implementation
-
+    with st.container(border=True):
+        st.subheader("Target Unit Special Abilities",)
+        special_abilities = show_input_special_abilities("target")
     # Return all relevant values
     return {
         "target_input_defense_value": defense,

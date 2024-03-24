@@ -7,6 +7,9 @@ name = "pypi"
 streamlit = "*"
 seaborn = "*"
 importlib-resources = "*"
+matplotlib = "*"
+pandas = "*"
+plotly = "*"
 
 [dev-packages]
 
