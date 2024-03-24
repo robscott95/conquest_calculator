@@ -17,6 +17,7 @@ def show(engagement_data: EngagementDataModel):
 
     st.subheader('Morale test:')
     st.write("Expected hits to roll for: ", round(engagement_data.expected_wounds_from_hits, 2)) 
+    st.write('Target:', engagement_data.target_resolve)
     st.write("**Expected wounds:**", round(engagement_data.expected_wounds_from_morale, 2))
 
 

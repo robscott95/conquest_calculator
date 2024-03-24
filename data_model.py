@@ -91,6 +91,10 @@ class EngagementDataModel:
         return number_of_attacks
     
     @property
+    def target_resolve(self):
+        return self.target_input_resolve_value + self.target_regiment_size_resolve_bonus
+
+    @property
     def active_target(self):
         return self.active_input_target_value
     
@@ -109,8 +113,7 @@ class EngagementDataModel:
     @property
     def expected_wounds_from_morale(self):
         if self.encounter_params['action_type'] == "Clash":
-            resolve_target = self.target_input_resolve_value + self.target_regiment_size_resolve_bonus
-            return self._calc_expected_success(self.expected_wounds_from_hits, resolve_target, invert_p=True)
+            return self._calc_expected_success(self.expected_wounds_from_hits, self.target_resolve, invert_p=True)
         elif self.encounter_params['action_type'] == "Volley":
             return 0
 
