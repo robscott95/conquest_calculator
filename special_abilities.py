@@ -21,7 +21,7 @@ def generate_pill_label(text):
 
 # def initialize_
 
-def show_special_abilities_block(unit_type):
+def show_special_abilities_input_block(unit_type):
     # Load special abilities from a JSON file if not already loaded
     if 'special_abilities' not in st.session_state:
         st.session_state.special_abilities = {}

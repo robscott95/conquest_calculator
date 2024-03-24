@@ -1,7 +1,7 @@
 # unit_stats.py
 import streamlit as st
 
-from special_abilities import show_special_abilities_block
+from special_abilities import show_special_abilities_input_block
 
 def show(
     initial_target_attack=3,
@@ -20,7 +20,7 @@ def show(
     # Collapsible section for Special Abilities
     # Assuming show_special_abilities_block returns a dict or similar structure of the selected abilities
     with st.expander("Special Abilities", expanded=True):
-        special_abilities = show_special_abilities_block("active")
+        special_abilities = show_special_abilities_input_block("active")
 
     action_type = st.radio("Action:", ["Clash", "Volley"])
 

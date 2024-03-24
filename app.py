@@ -1,10 +1,10 @@
 import streamlit as st
-from active_unit.main import show as show_active_unit_input
-from active_unit.summary_block import show as show_active_unit_summary
-from target_unit.main import show as show_target_unit
-from target_unit.summary_block import show as show_target_unit_summary
+from active_unit.input import show as show_active_unit_input
+from active_unit.summary import show as show_active_unit_summary
+from target_unit.input import show as show_target_unit
+from target_unit.summary import show as show_target_unit_summary
 from data_model import EngagementDataModel
-from results.main import show as show_results
+from results.summary import show as show_results
 
 import seaborn as sns
 import matplotlib.pyplot as plt
