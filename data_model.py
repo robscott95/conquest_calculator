@@ -46,6 +46,23 @@ class EngagementDataModel:
         else:
             return 0
         
+    def _get_rerolls_dict_hits(self):
+        rerolls_dict = {
+            key.replace("is_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "reroll" in key and ability.get("value") is True
+        }
+        
+        # Apply negation logic
+        # If is_reroll_misses is True, negate is_reroll_6s
+        if 'reroll_misses' in rerolls_dict:
+            rerolls_dict.pop('reroll_6s', None)  # Remove 'reroll_6s' if it exists
+        
+        # If is_reroll_hits is True, negate is_reroll_1s
+        if 'reroll_hits' in rerolls_dict:
+            rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
+        
+        return rerolls_dict
+        
     def _calc_expected_success(self, number_of_die, target, invert_p=False, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
         p_success = target / 6
         p_fail = 1 - p_success
@@ -54,13 +71,13 @@ class EngagementDataModel:
             p_success, p_fail = p_fail, p_success
 
         # Adjust probabilities for rerolling 1s and 6s
-        if reroll_1s:
-            # If rerolling 1s, effectively reduce the failure probability by the chance of failing and then succeeding.
+        if reroll_6s:
+            # If rerolling 6s, effectively reduce the failure probability by the chance of failing and then succeeding.
             p_fail -= (1/6) * p_success
             p_success += (1/6) * p_success
 
-        if reroll_6s:
-            # If rerolling 6s, effectively reduce the success probability by the chance of succeeding and then failing.
+        if reroll_1s:
+            # If rerolling 1s, effectively reduce the success probability by the chance of succeeding and then failing.
             p_success -= (1/6) * p_fail
             p_fail += (1/6) * p_fail
 
@@ -71,7 +88,7 @@ class EngagementDataModel:
         # Adjust for rerolling hits or misses
         if reroll_hits:
             # Rerolling hits means taking the expected_success, applying the fail probability, and adding those successes back in
-            expected_success += expected_success * p_fail
+            expected_success -= expected_success * p_fail
 
         if reroll_misses:
             # Rerolling misses means taking the expected_fail, applying the success probability, and adding those successes
@@ -100,11 +117,16 @@ class EngagementDataModel:
     
     @property
     def target_defense(self):
-        return max(self.target_input_defense_value, self.target_input_evasion_value)
+        defense_value = self.target_input_defense_value
+        if self.active_input_special_abilities['cleave']['value'] > 0:
+            defense_value -= self.active_input_special_abilities['cleave']['value']
+
+        return max(defense_value, self.target_input_evasion_value)
 
     @property
     def expected_hits(self):
-        return self._calc_expected_success(self.active_number_of_attacks, self.active_input_target_value)
+        rerolls_params = self._get_rerolls_dict_hits()
+        return self._calc_expected_success(self.active_number_of_attacks, self.active_input_target_value, **rerolls_params)
 
     @property
     def expected_wounds_from_hits(self):
