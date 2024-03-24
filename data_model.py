@@ -89,6 +89,14 @@ class EngagementDataModel:
         number_of_attacks = (self.active_input_number_of_attacks_value * self.active_input_attacking_stands)
         number_of_attacks = number_of_attacks + support_to_hits + self.active_input_special_abilities['is_leader']['value']
         return number_of_attacks
+    
+    @property
+    def active_target(self):
+        return self.active_input_target_value
+    
+    @property
+    def target_defense(self):
+        return max(self.target_input_defense_value, self.target_input_evasion_value)
 
     @property
     def expected_hits(self):
@@ -96,8 +104,7 @@ class EngagementDataModel:
 
     @property
     def expected_wounds_from_hits(self):
-        final_defense_value = max(self.target_input_defense_value, self.target_input_evasion_value)
-        return self._calc_expected_success(self.expected_hits, final_defense_value, invert_p=True)
+        return self._calc_expected_success(self.expected_hits, self.target_defense, invert_p=True)
     
     @property
     def expected_wounds_from_morale(self):

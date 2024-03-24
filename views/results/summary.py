@@ -7,14 +7,16 @@ def show(engagement_data: EngagementDataModel):
     st.markdown('-----')
     st.subheader('Rolling to Hit:')
     st.write('Number of attacks:', engagement_data.active_number_of_attacks)
-    st.write('Expected number of hits:', round(engagement_data.expected_hits, 2))
+    st.write('Target:', engagement_data.active_target)
+    st.write('**Expected hits:**', round(engagement_data.expected_hits, 2))
 
     st.subheader('Defense roll:')
     st.write("Expected hits to roll for: ", round(engagement_data.expected_hits, 2)) 
-    st.write("Expected wounds: ", round(engagement_data.expected_wounds_from_hits, 2)) 
+    st.write('Target:', engagement_data.target_defense)
+    st.write("**Expected wounds:**", round(engagement_data.expected_wounds_from_hits, 2)) 
 
     st.subheader('Morale test:')
     st.write("Expected hits to roll for: ", round(engagement_data.expected_wounds_from_hits, 2)) 
-    st.write("Expected wounds: ", round(engagement_data.expected_wounds_from_morale, 2))
+    st.write("**Expected wounds:**", round(engagement_data.expected_wounds_from_morale, 2))
 
 
