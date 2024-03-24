@@ -149,7 +149,8 @@ class VisualizeRollEstimation:
                 xanchor="center",  # Anchors the legend to the center
                 x=0.5,  # Positions the legend in the center of the axis (0.5 on a scale of 0 to 1)
                 y=-0.2,  # Positions the legend below the x-axis. Adjust as needed.
-                yanchor="top"  # Anchors the y position of the legend from its top.
+                yanchor="top",  # Anchors the y position of the legend from its top.
+                traceorder='reversed'
             ),
             legend_itemclick=False,
             legend_itemdoubleclick=False,
