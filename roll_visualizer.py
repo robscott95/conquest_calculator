@@ -56,7 +56,8 @@ class VisualizeRollEstimation:
             marker=dict(color=colors[0]),
             text=[total_dice],  # Display the number on the bar
             textposition='inside',  # Position the text inside the bar
-            hovertemplate='<b>Total Dice</b>: %{text}<extra></extra>'
+            hovertemplate='<b>Total Dice</b>: %{text}<extra></extra>',
+            textfont=dict(size=18, color='black', family='Droid Sans Mono')
         ))
         
         if successful_rolls != 0:
@@ -68,7 +69,8 @@ class VisualizeRollEstimation:
                 marker=dict(color=colors[1]),
                 text=[successful_rolls],  # Display the number on the bar
                 textposition='inside',  # Position the text inside the bar
-                hovertemplate='<b>Hits</b>: %{text}<extra></extra>'
+                hovertemplate='<b>Hits</b>: %{text}<extra></extra>',
+                textfont=dict(size=18, color='black', family='Droid Sans Mono')
             ))
         
         fig.add_trace(go.Bar(
@@ -79,7 +81,8 @@ class VisualizeRollEstimation:
             marker=dict(color=colors[2]),
             text=[wounds_inflicted],  # Display the number on the bar
             textposition='inside',  # Position the text inside the bar
-            hovertemplate='<b>Wounds</b>: %{text}<extra></extra>'
+            hovertemplate='<b>Wounds</b>: %{text}<extra></extra>',
+            textfont=dict(size=18, color='black', family='Droid Sans Mono')
         ))
         
         # Customize layout to remove x-axis title and hide the legend
