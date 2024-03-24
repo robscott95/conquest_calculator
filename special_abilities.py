@@ -21,7 +21,7 @@ def generate_pill_label(text):
 
 # def initialize_
 
-def show_special_abilities_input_block(unit_type):
+def show_input(unit_type):
     # Load special abilities from a JSON file if not already loaded
     if 'special_abilities' not in st.session_state:
         st.session_state.special_abilities = {}
@@ -69,7 +69,7 @@ def show_special_abilities_input_block(unit_type):
     if unit_type == "target":
         st.session_state.is_reroll_morale = st.checkbox('Re-roll morale saves', value=False)
 
-def show_special_ability_summary_block(unit_type):
+def show_summary(unit_type):
     container = st.container()  # Using container to group pills
     container.write("Special abilities: ")
 

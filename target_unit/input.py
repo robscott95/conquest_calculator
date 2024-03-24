@@ -2,7 +2,7 @@
 import streamlit as st
 import json
 
-from special_abilities import show_special_abilities_input_block
+from special_abilities import show_input as show_input_special_abilities
 
 def show(
     initial_defense=2,
@@ -22,7 +22,7 @@ def show(
     # Collapsible section for Special Abilities
     with st.expander("Special Abilities", expanded=True):
         # Assuming show_special_abilities_block function is adapted similarly for optional parameters
-        special_abilities = show_special_abilities_input_block("target")  # Adjust this based on actual implementation
+        special_abilities = show_input_special_abilities("target")  # Adjust this based on actual implementation
 
     # Return all relevant values
     return {
