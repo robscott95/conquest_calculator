@@ -8,6 +8,7 @@ from views.encounter_params.input import show as show_encounter_params_input
 
 
 from data_model import EngagementDataModel
+from roll_visualizer import VisualizeRollEstimation
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -43,7 +44,7 @@ engagement_data = EngagementDataModel(
     encounter_params
 )
 
-fig = engagement_data.visualize_hits_and_morale()
+fig = VisualizeRollEstimation(engagement_data).visualize_hits_and_morale()
 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 col1, col2, col3 = st.columns(3)
