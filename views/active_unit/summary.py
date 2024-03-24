@@ -1,5 +1,5 @@
 import streamlit as st
-from special_abilities import show_summary as show_summary_special_abilities
+from views.special_abilities.summary import show as show_summary_special_abilities
 
 def show(target, number_of_attacks, number_of_attacking_stands, number_of_supporting_stands, active_special_abilities):
     with st.container(border=True):

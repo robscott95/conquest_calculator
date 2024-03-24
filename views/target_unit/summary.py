@@ -1,5 +1,5 @@
 import streamlit as st
-from special_abilities import show_summary as show_summary_special_abilities
+from views.special_abilities.summary import show as show_summary_special_abilities
 
 
 

@@ -2,7 +2,7 @@
 import streamlit as st
 import json
 
-from special_abilities import show_input as show_input_special_abilities
+from views.special_abilities.input import show as show_input_special_abilities
 
 def show(
     initial_defense=2,
