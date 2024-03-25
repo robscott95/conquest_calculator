@@ -1,5 +1,45 @@
 {
     "broken": {"label": "Broken", "value": false, "always_visible": true},
     "shield": {"label": "Shield (X)", "value": 0, "always_visible": false},
-    "is_receive_half_morale_wounds": {"label": "Half morale wounds", "value": false, "always_visible": false}
+    "is_receive_half_morale_wounds": {"label": "Half morale wounds", "value": false, "always_visible": false},
+    "is_to_defense_reroll_hits": {
+        "label": "Re-roll Defense Saves",
+        "value": false,
+        "always_visible": false
+    },
+    "is_to_defense_reroll_1s": {
+        "label": "Re-roll Defense 1's",
+        "value": false,
+        "always_visible": false
+    },
+    "is_to_defense_reroll_6s": {
+        "label": "Re-roll Defense 6's",
+        "value": false,
+        "always_visible": false
+    },
+    "is_to_defense_reroll_misses": {
+        "label": "Re-roll Defense Fails",
+        "value": false,
+        "always_visible": false
+    },
+    "is_to_morale_reroll_hits": {
+        "label": "Re-roll Morale Saves",
+        "value": false,
+        "always_visible": false
+    },
+    "is_to_morale_reroll_1s": {
+        "label": "Re-roll Morale 1's",
+        "value": false,
+        "always_visible": false
+    },
+    "is_to_morale_reroll_6s": {
+        "label": "Re-roll Morale 6's",
+        "value": false,
+        "always_visible": false
+    },
+    "is_to_morale_reroll_misses": {
+        "label": "Re-roll Morale Fails",
+        "value": false,
+        "always_visible": false
+    }
 }

@@ -62,7 +62,7 @@ class EngagementDataModel:
     
     def _get_rerolls_dict_defense(self):
         rerolls_dict = {
-            key.replace("is_to_defense_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            key.replace("is_to_defense_", ""): ability["value"] for key, ability in self.target_input_special_abilities.items()
             if "is_to_defense_reroll" in key and ability.get("value") is True
         }
         
@@ -79,7 +79,7 @@ class EngagementDataModel:
 
     def _get_rerolls_dict_morale(self):
         rerolls_dict = {
-            key.replace("is_to_morale_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            key.replace("is_to_morale_", ""): ability["value"] for key, ability in self.target_input_special_abilities.items()
             if "is_to_morale_reroll" in key and ability.get("value") is True
         }
 
@@ -97,12 +97,9 @@ class EngagementDataModel:
         
         return rerolls_dict
         
-    def _calc_expected_success(self, number_of_die, target, invert_p=False, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
+    def _calc_expected_success(self, number_of_die, target, get_fails=False, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
         p_success = target / 6
         p_fail = 1 - p_success
-
-        if invert_p:
-            p_success, p_fail = p_fail, p_success
 
         # Adjust probabilities for rerolling 1s and 6s
         if reroll_6s:
@@ -127,6 +124,9 @@ class EngagementDataModel:
         if reroll_misses:
             # Rerolling misses means taking the expected_fail, applying the success probability, and adding those successes
             expected_success += expected_fail * p_success
+        
+        if get_fails:
+            return number_of_die - expected_success
 
         return expected_success
 
@@ -181,13 +181,14 @@ class EngagementDataModel:
 
     @property
     def expected_wounds_from_hits(self):
-        return self._calc_expected_success(self.expected_hits, self.target_defense, invert_p=True)
+        rerolls_params = self._get_rerolls_dict_defense()
+        return self._calc_expected_success(self.expected_hits, self.target_defense, get_fails=True, **rerolls_params)
     
     @property
     def expected_wounds_from_morale(self):
         rerolls_params = self._get_rerolls_dict_morale()
         if self.encounter_params['action_type'] == "Clash":
-            expected_wounds = self._calc_expected_success(self.expected_wounds_from_hits, self.target_resolve, invert_p=True, **rerolls_params)
+            expected_wounds = self._calc_expected_success(self.expected_wounds_from_hits, self.target_resolve, get_fails=True, **rerolls_params)
         elif self.encounter_params['action_type'] == "Volley":
             expected_wounds = 0
         
