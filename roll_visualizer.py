@@ -160,23 +160,23 @@ class VisualizeRollEstimation:
     
     def visualize_simulated_discrete_and_cumulative_distributions(self, mode):
         if mode == "hits":
-            title = "To Hit"
             reroll_params = self.data._get_rerolls_dict_hits()
             total_number_of_dice = self.data.active_number_of_attacks
             target = self.data.active_target
+            title = f"To Hit | Target: {target})"
         elif mode == "defense":
-            title = "Defense"
             reroll_params = self.data._get_rerolls_dict_defense()
             total_number_of_dice = self.data.expected_hits
             target = self.data.target_defense
+            title = f"Defense | Target: {target})"
         elif mode == "morale":
-            title = "Morale"
             reroll_params = self.data._get_rerolls_dict_morale()
             total_number_of_dice = self.data.expected_wounds_from_hits
             if self.data.encounter_params['action_type'] == "Volley":
                 target = 6
             else:
                 target = self.data.target_resolve
+            title = f"Morale | Target: {target})"
 
         discrete_probabilities, cumulative_probabilities, unique = self.data.simulate_dice_rolls(
             round(total_number_of_dice), target, **reroll_params
@@ -217,7 +217,10 @@ class VisualizeRollEstimation:
         return fig
 
     def visualize_simulated_all(self):
-        titles = ["To hit", "Defense", "Morale"]
+        titles = [
+            f"To Hit |{self.data.active_target}|", 
+            f"Defense |{self.data.target_defense}|",
+            f"Morale |{self.data.target_resolve if self.data.encounter_params['action_type'] != "Volley" else "WIN"}|"]
 
         # Initialize subplot with secondary Y-axis configuration for each column.
         fig = make_subplots(rows=1, cols=3, subplot_titles=titles,
@@ -225,7 +228,6 @@ class VisualizeRollEstimation:
                             horizontal_spacing=0.05)  # Adjust spacing as needed
 
         modes = ["hits", "defense", "morale"]
-        # shared_tickvals = [0, .25, .50, .75, .100]  # Shared tick values for alignment
 
         for i, mode in enumerate(modes, start=1):
             temp_fig = self.visualize_simulated_discrete_and_cumulative_distributions(mode)
