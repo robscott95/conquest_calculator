@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 
 class EngagementDataModel:
     def __init__(
@@ -155,7 +156,7 @@ class EngagementDataModel:
     @property
     def expected_hits(self):
         rerolls_params = self._get_rerolls_dict_hits()
-        return self._calc_expected_success(self.active_number_of_attacks, self.active_input_target_value, **rerolls_params)
+        return self._calc_expected_success(self.active_number_of_attacks, self.active_target, **rerolls_params)
 
     @property
     def expected_wounds_from_hits(self):
@@ -181,4 +182,32 @@ class EngagementDataModel:
 
         return hit_wounds + morale_wounds
 
+    @staticmethod
+    def simulate_dice_rolls(total_number_of_dice, target, simulations=10000):
+        rolls = np.random.randint(1, 7, (simulations, total_number_of_dice))
 
+        success_counts = np.sum(rolls <= target, axis=1)
+
+        unique, counts = np.unique(success_counts, return_counts=True)
+        discrete_probabilities = counts / simulations
+
+        # Adjusting the calculation of full_range and arrays size
+        # max_possible_outcome is the maximum sum of successes, which is total_number_of_dice
+        full_range = np.arange(1, total_number_of_dice + 1)
+
+        # Initialize full arrays for probabilities with zeros
+        discrete_probabilities_full = np.zeros(total_number_of_dice)
+        cumulative_probabilities_full = np.zeros(total_number_of_dice)
+
+        # Map existing probabilities into the full arrays
+        for value, prob in zip(unique, discrete_probabilities):
+            if value <= total_number_of_dice:
+                discrete_probabilities_full[value - 1] = prob  # Adjust index for 1-based outcome
+
+        # Calculate cumulative probabilities
+        reversed_cumulative_probabilities = np.cumsum(discrete_probabilities_full[::-1])
+
+        # Ait ain't properly reversed otherwise
+        reversed_cumulative_probabilities = reversed_cumulative_probabilities[::-1]
+
+        return discrete_probabilities_full, reversed_cumulative_probabilities, full_range
