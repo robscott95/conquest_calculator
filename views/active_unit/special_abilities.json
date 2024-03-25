@@ -4,6 +4,11 @@
         "value": true,
         "always_visible": true
     },
+    "is_inspired": {
+        "label": "Inspired",
+        "value": true,
+        "always_visible": true
+    },
     "cleave": {
         "label": "Cleave (X)",
         "value": 0,

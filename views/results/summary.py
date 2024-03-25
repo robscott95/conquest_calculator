@@ -7,7 +7,7 @@ def show(engagement_data: EngagementDataModel):
     st.markdown('-----')
     st.subheader('Rolling to Hit:')
     st.write('Number of attacks:', engagement_data.active_number_of_attacks)
-    st.write('Target:', engagement_data.active_target)
+    st.write('Target:', engagement_data.target_to_hit)
     st.write('**Expected hits:**', round(engagement_data.expected_hits, 2))
 
     st.subheader('Defense roll:')

@@ -60,7 +60,9 @@ class VisualizeRollEstimation:
             textfont=dict(size=18, color='#0e1117', family='Droid Sans')
         ))
         
+        # print(successful_rolls)
         if successful_rolls != 0:
+            # print('what')
             fig.add_trace(go.Bar(
                 x=[successful_rolls_proportion],
                 y=[1],
@@ -92,6 +94,8 @@ class VisualizeRollEstimation:
         return fig
     
     def visualize_hits(self):
+        print(self.data.expected_hits)
+        print(self.data.expected_hits)
         fig = self.visualize_dice_outcomes(
             round(self.data.active_number_of_attacks, 2), 
             round(self.data.expected_hits, 2), 
@@ -163,7 +167,7 @@ class VisualizeRollEstimation:
         if mode == "hits":
             reroll_params = self.data._get_rerolls_dict_hits()
             total_number_of_dice = self.data.active_number_of_attacks
-            target = self.data.active_target
+            target = self.data.target_to_hit
             title = f"To Hit | Target: {target})"
         elif mode == "defense":
             reroll_params = self.data._get_rerolls_dict_defense()
@@ -238,7 +242,7 @@ class VisualizeRollEstimation:
 
     def visualize_simulated_all(self):
         titles = [
-            f"To Hit |{self.data.active_target}|", 
+            f"To Hit |{self.data.target_to_hit}|", 
             f"Defense |{self.data.target_defense}|",
             f"Morale |{self.data.target_resolve if self.data.encounter_params['action_type'] != 'Volley' else 'WIN'}|"
         ]
