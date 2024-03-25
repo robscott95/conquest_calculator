@@ -240,7 +240,8 @@ class VisualizeRollEstimation:
         titles = [
             f"To Hit |{self.data.active_target}|", 
             f"Defense |{self.data.target_defense}|",
-            f"Morale |{self.data.target_resolve if self.data.encounter_params['action_type'] != "Volley" else "WIN"}|"]
+            f"Morale |{self.data.target_resolve if self.data.encounter_params['action_type'] != 'Volley' else 'WIN'}|"
+        ]
 
         # Initialize subplot with secondary Y-axis configuration for each column.
         fig = make_subplots(rows=1, cols=3, subplot_titles=titles,
