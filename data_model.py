@@ -45,8 +45,25 @@ class EngagementDataModel:
         
     def _get_rerolls_dict_hits(self):
         rerolls_dict = {
-            key.replace("is_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
-            if "reroll" in key and ability.get("value") is True
+            key.replace("is_to_hits_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "is_to_hits_reroll" in key and ability.get("value") is True
+        }
+        
+        # Apply negation logic
+        # If is_reroll_misses is True, negate is_reroll_6s
+        if 'reroll_misses' in rerolls_dict:
+            rerolls_dict.pop('reroll_6s', None)  # Remove 'reroll_6s' if it exists
+        
+        # If is_reroll_hits is True, negate is_reroll_1s
+        if 'reroll_hits' in rerolls_dict:
+            rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
+        
+        return rerolls_dict
+    
+    def _get_rerolls_dict_defense(self):
+        rerolls_dict = {
+            key.replace("is_to_defense_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "is_to_defense_reroll" in key and ability.get("value") is True
         }
         
         # Apply negation logic
@@ -62,8 +79,8 @@ class EngagementDataModel:
 
     def _get_rerolls_dict_morale(self):
         rerolls_dict = {
-            key.replace("is_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
-            if "reroll" in key and ability.get("value") is True
+            key.replace("is_to_morale_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "is_to_morale_reroll" in key and ability.get("value") is True
         }
 
         if self.encounter_params['is_flank_attack']:
@@ -183,31 +200,46 @@ class EngagementDataModel:
         return hit_wounds + morale_wounds
 
     @staticmethod
-    def simulate_dice_rolls(total_number_of_dice, target, simulations=10000):
+    def simulate_dice_rolls(total_number_of_dice, target, simulations=10000, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
         rolls = np.random.randint(1, 7, (simulations, total_number_of_dice))
 
+        # Define reroll criteria based on boolean flags
+        def reroll_criteria(dice_roll):
+            criteria = np.zeros(dice_roll.shape, dtype=bool)
+            if reroll_1s:
+                criteria |= (dice_roll == 1)
+            if reroll_6s:
+                criteria |= (dice_roll == 6)
+            if reroll_hits:
+                criteria |= (dice_roll <= target)
+            if reroll_misses:
+                criteria |= (dice_roll > target)
+            return criteria
+
+        # Apply reroll criteria to initial rolls
+        need_reroll = reroll_criteria(rolls)
+        
+        # Perform rerolls where criteria are met and ensure each die is only rerolled once
+        reroll_indices = np.where(need_reroll)
+        new_rolls = np.random.randint(1, 7, reroll_indices[0].shape)
+        rolls[reroll_indices] = new_rolls
+
+        # Recalculate success counts after rerolls
         success_counts = np.sum(rolls <= target, axis=1)
 
         unique, counts = np.unique(success_counts, return_counts=True)
         discrete_probabilities = counts / simulations
 
-        # Adjusting the calculation of full_range and arrays size
-        # max_possible_outcome is the maximum sum of successes, which is total_number_of_dice
         full_range = np.arange(1, total_number_of_dice + 1)
-
-        # Initialize full arrays for probabilities with zeros
         discrete_probabilities_full = np.zeros(total_number_of_dice)
         cumulative_probabilities_full = np.zeros(total_number_of_dice)
 
-        # Map existing probabilities into the full arrays
+        # Fill in the probabilities
         for value, prob in zip(unique, discrete_probabilities):
-            if value <= total_number_of_dice:
-                discrete_probabilities_full[value - 1] = prob  # Adjust index for 1-based outcome
+            if 1 <= value <= total_number_of_dice:
+                discrete_probabilities_full[value - 1] = prob
 
         # Calculate cumulative probabilities
-        reversed_cumulative_probabilities = np.cumsum(discrete_probabilities_full[::-1])
+        cumulative_probabilities_full = np.cumsum(discrete_probabilities_full[::-1])[::-1]
 
-        # Ait ain't properly reversed otherwise
-        reversed_cumulative_probabilities = reversed_cumulative_probabilities[::-1]
-
-        return discrete_probabilities_full, reversed_cumulative_probabilities, full_range
+        return discrete_probabilities_full, cumulative_probabilities_full, full_range

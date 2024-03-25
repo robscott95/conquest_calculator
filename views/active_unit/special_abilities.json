@@ -14,22 +14,22 @@
         "value": 0,
         "always_visible": false
     },
-    "is_reroll_1s": {
+    "is_to_hits_reroll_1s": {
         "label": "Re-roll 1's",
         "value": false,
         "always_visible": false
     },
-    "is_reroll_6s": {
+    "is_to_hits_reroll_6s": {
         "label": "Re-roll 6's",
         "value": false,
         "always_visible": false
     },
-    "is_reroll_misses": {
+    "is_to_hits_reroll_misses": {
         "label": "Re-roll Misses",
         "value": false,
         "always_visible": false
     },
-    "is_reroll_hits": {
+    "is_to_hits_reroll_hits": {
         "label": "Re-roll Hits",
         "value": false,
         "always_visible": false

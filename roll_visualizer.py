@@ -161,19 +161,25 @@ class VisualizeRollEstimation:
     def visualize_simulated_discrete_and_cumulative_distributions(self, mode):
         if mode == "hits":
             title = "To Hit"
+            reroll_params = self.data._get_rerolls_dict_hits()
             total_number_of_dice = self.data.active_number_of_attacks
             target = self.data.active_target
         elif mode == "defense":
             title = "Defense"
+            reroll_params = self.data._get_rerolls_dict_defense()
             total_number_of_dice = self.data.expected_hits
             target = self.data.target_defense
         elif mode == "morale":
             title = "Morale"
+            reroll_params = self.data._get_rerolls_dict_morale()
             total_number_of_dice = self.data.expected_wounds_from_hits
-            target = self.data.target_resolve
+            if self.data.encounter_params['action_type'] == "Volley":
+                target = 6
+            else:
+                target = self.data.target_resolve
 
         discrete_probabilities, cumulative_probabilities, unique = self.data.simulate_dice_rolls(
-            round(total_number_of_dice), target
+            round(total_number_of_dice), target, **reroll_params
         )
 
         fig = go.Figure()
