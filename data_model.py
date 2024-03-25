@@ -151,6 +151,10 @@ class EngagementDataModel:
         resolve_value = self.target_input_resolve_value + self.target_regiment_size_resolve_bonus
         if self.target_input_special_abilities['broken']['value']:
             resolve_value = self.target_input_resolve_value
+
+        if self.active_input_special_abilities['resolve_mod']['value'] > 0:
+            resolve_value -= self.active_input_special_abilities['resolve_mod']['value']
+
         return min(resolve_value, 5)
 
     @property

@@ -14,6 +14,11 @@
         "value": 0,
         "always_visible": false
     },
+    "resolve_mod": {
+        "label": "Terrifying (X)",
+        "value": 0,
+        "always_visible": false
+    },
     "is_to_hits_reroll_1s": {
         "label": "Re-roll 1's",
         "value": false,

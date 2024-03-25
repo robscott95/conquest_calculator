@@ -49,7 +49,6 @@ fig = visualizer.visualize_hits_and_morale()
 config = {
     'staticPlot': False,  # Allows hover effects but prevents zoom, pan, etc.
     'scrollZoom': False,  # Disables zooming with scroll
-    'doubleClick': False,  # Disables zooming with double-click
     'showLink': False,  # Hides the link to edit chart on Plotly,
     'displayModeBar': False
 }
