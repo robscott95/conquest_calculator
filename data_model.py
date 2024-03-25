@@ -169,7 +169,10 @@ class EngagementDataModel:
             defense_value += self.target_input_special_abilities['shield']['value']
 
         if self.active_input_special_abilities['cleave']['value'] > 0:
-            defense_value -= self.active_input_special_abilities['cleave']['value']
+            cleave_value = self.active_input_special_abilities['cleave']['value']
+            if self.target_input_special_abilities['hardened']['value'] > 0:
+                cleave_value -= self.target_input_special_abilities['hardened']['value']
+            defense_value -= cleave_value
 
         highest_defense = max(defense_value, self.target_input_evasion_value)
         return min(highest_defense, 5)
