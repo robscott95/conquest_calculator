@@ -40,6 +40,7 @@ engagement_data = EngagementDataModel(
     target_unit_input_data['target_input_evasion_value'],
     target_unit_input_data['target_input_resolve_value'],
     target_unit_input_data['target_input_stands'],
+    target_unit_input_data['target_input_wounds_per_stands'],
     target_unit_input_data['target_input_special_abilities'],
     encounter_params
 )

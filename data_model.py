@@ -13,6 +13,7 @@ class EngagementDataModel:
             target_input_evasion_value,
             target_input_resolve_value,
             target_input_stands,
+            target_input_wounds_per_stand,
             target_input_special_abilities,
             encounter_params,
         ):
@@ -24,6 +25,7 @@ class EngagementDataModel:
         self.target_input_evasion_value = target_input_evasion_value
         self.target_input_resolve_value = target_input_resolve_value
         self.target_input_stands = target_input_stands
+        self.target_input_wounds_per_stand = target_input_wounds_per_stand
 
         self.encounter_params = encounter_params
 
@@ -183,6 +185,10 @@ class EngagementDataModel:
 
         highest_defense = max(defense_value, self.target_input_evasion_value)
         return min(highest_defense, 5)
+    
+    @property
+    def target_wounds_total(self):
+        return 1
 
     @property
     def expected_hits(self):
