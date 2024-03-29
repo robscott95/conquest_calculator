@@ -14,11 +14,11 @@ def show(
     # Collapsible section for Unit Stats
     with st.container(border=True):
         st.header("Target Unit Stats")
-        defense = st.slider('Defense', min_value=0, max_value=6, value=initial_defense)
-        evasion = st.slider('Evasion', min_value=0, max_value=6, value=initial_evasion)
-        resolve = st.slider('Resolve', min_value=0, max_value=6, value=initial_resolve)
+        defense = st.slider('Defense value', min_value=0, max_value=6, value=initial_defense)
+        evasion = st.slider('Evasion value', min_value=0, max_value=6, value=initial_evasion)
+        resolve = st.slider('Resolve value', min_value=0, max_value=6, value=initial_resolve)
+        wounds_per_stand = st.slider('Wounds per Stand', min_value=0, max_value=30, value=initial_wounds_per_stand )
         target_regiment_stands = st.slider('Stands', min_value=0, max_value=20, value=initial_target_regiment_stands)
-        wounds_per_stand = st.slider('Wounds', min_value=0, max_value=30, value=initial_wounds_per_stand )
 
     # Collapsible section for Special Abilities
     with st.container(border=True):
