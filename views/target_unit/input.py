@@ -5,7 +5,7 @@ import json
 from views.special_abilities.input import show as show_input_special_abilities
 
 def show(
-    initial_defense=2,
+    initial_defense=3,
     initial_evasion=1,
     initial_resolve=3,
     initial_target_regiment_stands=3,
