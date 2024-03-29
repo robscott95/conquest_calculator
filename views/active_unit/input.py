@@ -15,7 +15,9 @@ def show(
         target_attack = st.slider('Target value', min_value=1, max_value=6, value=initial_target_attack)
         no_of_attacks = st.slider('Attacks value', min_value=1, max_value=20, value=initial_no_of_attacks)
         no_of_stands_all = st.slider('Stands', min_value=1, max_value=20, value=initial_no_of_stands_all)
-        no_of_stands_engaged = st.slider('Attacking Stands', min_value=0, max_value=no_of_stands_all, value=initial_no_of_stands_engaged)
+        
+        no_of_stands_engaged = min(initial_no_of_stands_engaged, no_of_stands_all)
+        no_of_stands_engaged = st.slider('Attacking Stands', min_value=0, max_value=no_of_stands_all, value=no_of_stands_engaged)
 
     # Collapsible section for Special Abilities
     # Assuming show_special_abilities_block returns a dict or similar structure of the selected abilities
