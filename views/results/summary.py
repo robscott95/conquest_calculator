@@ -1,9 +1,13 @@
 import streamlit as st
+import math
 from data_model import EngagementDataModel
 
 def show(engagement_data: EngagementDataModel):
     st.header("Results")
-    st.write("Expected total wounds: ", round(engagement_data.expected_wounds_from_all, 2))
+    st.write("Avg total wounds: ", round(engagement_data.expected_wounds_from_all, 2))
+    st.write("Avg number of stands remaining: ", engagement_data.expected_stands_remaining )
+    st.write("Avg wounds remaining on last stand: ", engagement_data.expected_wounds_remaining_on_last_stand )
+
     st.markdown('-----')
     st.subheader('Rolling to Hit:')
     st.write('Number of attacks:', engagement_data.active_number_of_attacks)

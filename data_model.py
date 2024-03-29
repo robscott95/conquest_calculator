@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import math
 
 
 from stats import Stats
@@ -156,10 +157,6 @@ class EngagementDataModel:
 
         highest_defense = max(defense_value, self.target_input_evasion_value)
         return min(highest_defense, 5)
-    
-    @property
-    def target_wounds_total(self):
-        return self.target_input_wounds_per_stand * self.target_input_stands
 
     @property
     def expected_hits(self):
@@ -202,3 +199,20 @@ class EngagementDataModel:
         morale_wounds = self.expected_wounds_from_morale
 
         return hit_wounds + morale_wounds
+
+    @property
+    def target_wounds_total(self):
+        return self.target_input_wounds_per_stand * self.target_input_stands
+
+    @property
+    def expected_remaining_wounds(self):
+        return self.target_wounds_total - self.expected_wounds_from_all
+    
+    @property
+    def expected_stands_remaining(self):
+        return self.expected_remaining_wounds / self.target_input_stands
+    
+
+    @property
+    def expected_wounds_remaining_on_last_stand(self):
+        return self.expected_remaining_wounds - (math.floor(self.expected_stands_remaining) * self.target_input_wounds_per_stand)
