@@ -6,13 +6,15 @@ import math
 import numpy as np
 
 from data_model import EngagementDataModel
+from stats import Stats
 
 class VisualizeRollEstimation:
     def __init__(self, data: EngagementDataModel):
         self.data = data
+        self.stats = Stats()
 
     @staticmethod
-    def _visualize_rolls(total_dice, successful_rolls, wounds_inflicted):
+    def _visualize_expected_rolls(total_dice, successful_rolls, wounds_inflicted):
         # Prepare the data
         data = {
             'Outcome': ['Thrown', 'Hits', 'Wounds'],
@@ -34,7 +36,7 @@ class VisualizeRollEstimation:
         return fig
     
     @staticmethod
-    def visualize_dice_outcomes(total_dice, successful_rolls, wounds_inflicted):
+    def visualize_expected_dice_outcomes(total_dice, successful_rolls, wounds_inflicted):
         colors = ['#AFE07D', '#F4CD54', '#FE8D64']
 
         # Calculate proportions
@@ -57,12 +59,10 @@ class VisualizeRollEstimation:
             text=[total_dice],  # Display the number on the bar
             textposition='inside',  # Position the text inside the bar
             hovertemplate='<b>Total Dice</b>: %{text}<extra></extra>',
-            textfont=dict(size=18, color='#0e1117', family='Droid Sans')
+            textfont=dict(size=18, color='#0e1117')
         ))
         
-        # print(successful_rolls)
         if successful_rolls != 0:
-            # print('what')
             fig.add_trace(go.Bar(
                 x=[successful_rolls_proportion],
                 y=[1],
@@ -72,7 +72,7 @@ class VisualizeRollEstimation:
                 text=[successful_rolls],  # Display the number on the bar
                 textposition='inside',  # Position the text inside the bar
                 hovertemplate='<b>Hits</b>: %{text}<extra></extra>',
-                textfont=dict(size=18, color='#0e1117', family='Droid Sans')
+                textfont=dict(size=18, color='#0e1117')
             ))
         
         fig.add_trace(go.Bar(
@@ -84,7 +84,7 @@ class VisualizeRollEstimation:
             text=[f"<b>{wounds_inflicted}</b>"],  # Display the number on the bar
             textposition='inside',  # Position the text inside the bar
             hovertemplate='<b>Wounds</b>: %{text}<extra></extra>',
-            textfont=dict(size=18, color='#0e1117', family='Droid Sans')
+            textfont=dict(size=18, color='#0e1117')
         ))
 
         # fig.update_yaxes(automargin=True)
@@ -93,33 +93,31 @@ class VisualizeRollEstimation:
     
         return fig
     
-    def visualize_hits(self):
-        print(self.data.expected_hits)
-        print(self.data.expected_hits)
-        fig = self.visualize_dice_outcomes(
+    def visualize_expected_hits(self):
+        fig = self.visualize_expected_dice_outcomes(
             round(self.data.active_number_of_attacks, 2), 
             round(self.data.expected_hits, 2), 
             round(self.data.expected_wounds_from_hits, 2)
         )
         return fig
 
-    def visualize_morale(self):
-        fig = self.visualize_dice_outcomes(
+    def visualize_expected_morale(self):
+        fig = self.visualize_expected_dice_outcomes(
             round(self.data.expected_wounds_from_hits, 2), 
             0,
             round(self.data.expected_wounds_from_morale, 2)
         )
         return fig
     
-    def visualize_hits_and_morale(self):
+    def visualize_expected_hits_and_morale(self):
         titles = ["To hit", "Morale"]
     
         # Create a subplot layout: 2 rows, 1 column
         fig = make_subplots(rows=2, cols=1, subplot_titles=titles, vertical_spacing=0.15)
         
         # Generate and add each subplot. Adjust these parameters as per your actual data
-        hits_fig = self.visualize_hits()
-        morale_fig = self.visualize_morale()
+        hits_fig = self.visualize_expected_hits()
+        morale_fig = self.visualize_expected_morale()
         
         # Since we cannot directly add figures to subplots, we extract data and layout from each and add to the main figure
         for trace in hits_fig.data:
@@ -184,7 +182,7 @@ class VisualizeRollEstimation:
             title = f"Morale | Target: {target})"
 
         # Simulation placeholder, replace with your actual dice roll simulation
-        discrete_probabilities, cumulative_probabilities, unique = self.data.simulate_dice_rolls(
+        discrete_probabilities, cumulative_probabilities, unique = self.stats.simulate_dice_rolls(
             round(total_number_of_dice), target, **reroll_params
         )
 

@@ -31,5 +31,5 @@ def show(
         "target_input_resolve_value": resolve,
         "target_input_stands": target_regiment_stands,
         "target_input_special_abilities": special_abilities,
-        "wounds_per_stand": wounds_per_stand,
+        "target_input_wounds_per_stand": wounds_per_stand,
     }
