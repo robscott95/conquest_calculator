@@ -68,14 +68,14 @@ class Stats:
         unique, counts = np.unique(success_counts, return_counts=True)
         discrete_probabilities = counts / simulations
 
-        full_range = np.arange(1, total_number_of_dice + 1)
-        discrete_probabilities_full = np.zeros(total_number_of_dice)
-        cumulative_probabilities_full = np.zeros(total_number_of_dice)
+        full_range = np.arange(0, total_number_of_dice+1)
+        discrete_probabilities_full = np.zeros(total_number_of_dice + 1)
+        cumulative_probabilities_full = np.zeros(total_number_of_dice + 1)
 
         # Fill in the probabilities
         for value, prob in zip(unique, discrete_probabilities):
-            if 1 <= value <= total_number_of_dice:
-                discrete_probabilities_full[value - 1] = prob
+            if 0 <= value <= total_number_of_dice:
+                discrete_probabilities_full[value] = prob
 
         # Calculate cumulative probabilities
         cumulative_probabilities_full = np.cumsum(discrete_probabilities_full[::-1])[::-1]

@@ -159,7 +159,7 @@ class EngagementDataModel:
     
     @property
     def target_wounds_total(self):
-        return 1
+        return self.target_input_wounds_per_stand * self.target_input_stands
 
     @property
     def expected_hits(self):
