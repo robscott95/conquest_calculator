@@ -1,12 +1,12 @@
 {
     "is_leader": {
         "label": "Leader",
-        "value": true,
+        "value": false,
         "always_visible": true
     },
     "is_inspired": {
         "label": "Inspired",
-        "value": true,
+        "value": false,
         "always_visible": true
     },
     "cleave": {

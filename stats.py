@@ -80,6 +80,78 @@ class Stats:
         # Calculate cumulative probabilities
         cumulative_probabilities_full = np.cumsum(discrete_probabilities_full[::-1])[::-1]
 
-        return discrete_probabilities_full, cumulative_probabilities_full, full_range
+        return {
+            "success_counts": success_counts,
+            "fail_counts": np.clip(total_number_of_dice - success_counts, a_min=0, a_max=None),
+            "full_range": full_range,
+            "unique": unique,
+            "discrete_probabilities": discrete_probabilities_full, 
+            "cumulative_probabilities": cumulative_probabilities_full, 
+        }
+    
+    def get_simulation_params(self, data, mode):
+        if mode == "hits":
+            reroll_params = data._get_rerolls_dict_hits()
+            total_number_of_dice = data.active_number_of_attacks
+            target = data.target_to_hit
+
+        elif mode == "defense":
+            reroll_params = data._get_rerolls_dict_defense()
+            total_number_of_dice = data.expected_hits
+            target = data.target_defense
+        elif mode == "morale":
+            reroll_params = data._get_rerolls_dict_morale()
+            total_number_of_dice = data.expected_wounds_from_hits
+            if data.encounter_params['action_type'] == "Volley":
+                target = 6
+            else:
+                target = data.target_resolve
+
+        return reroll_params, total_number_of_dice, target
 
 
+    def simulate_rolls_by_type(self, data, mode):
+        reroll_params, total_number_of_dice, target = self.get_simulation_params(data, mode)
+
+                
+        if mode in ["defense", "morale"]:
+            previous_mode = "hits" if mode == "defense" else "defense"
+            previous_simulation_results = self.simulate_rolls_by_type(data, previous_mode)
+            max_full_range = max(previous_simulation_results["full_range"])
+            
+            aggregated_discrete_probabilities = np.zeros(max_full_range + 1)
+            aggregated_cumulative_probabilities = np.zeros(max_full_range + 1)
+            average_fail_counts = 0
+            
+             # Aggregate results based on the distribution of previous phase outcomes
+            for outcome, probability in zip(previous_simulation_results["full_range"], previous_simulation_results["discrete_probabilities"]):
+                if probability > 0:  # Only simulate for outcomes that occurred
+                    current_results = self.simulate_dice_rolls(
+                        outcome, target, simulations=10000, **reroll_params  # Simulate based on the outcome as total dice
+                    )
+
+                    max_full_range = max(max_full_range, max(current_results['full_range']))
+                    # The simulation returns a dictionary; extract discrete probabilities
+                    discrete_probabilities = np.zeros(max_full_range + 1)
+                    discrete_probabilities[:len(current_results["discrete_probabilities"])] = current_results["discrete_probabilities"]
+                    
+                    # Weight discrete probabilities by the probability of the outcome occurring
+                    weighted_discrete_probabilities = discrete_probabilities * probability
+                    
+                    # Aggregate weighted probabilities into the total distribution
+                    # This assumes the length of weighted_discrete_probabilities aligns with aggregated results arrays
+                    aggregated_discrete_probabilities += weighted_discrete_probabilities
+
+                    average_fail_counts = average_fail_counts + np.mean(current_results["fail_counts"] * probability)
+                
+            aggregated_cumulative_probabilities = np.cumsum(aggregated_discrete_probabilities[::-1])[::-1]
+            aggregated_full_range = np.arange(0, max_full_range+1)
+            simulation_results = {
+                "full_range": aggregated_full_range,
+                "fail_counts": average_fail_counts,
+                "discrete_probabilities": aggregated_discrete_probabilities, 
+                "cumulative_probabilities": aggregated_cumulative_probabilities, 
+            }
+        else:
+            simulation_results = self.simulate_dice_rolls(total_number_of_dice, target, **reroll_params)
+        return simulation_results

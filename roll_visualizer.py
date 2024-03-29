@@ -163,37 +163,28 @@ class VisualizeRollEstimation:
     
     def visualize_simulated_discrete_and_cumulative_distributions(self, mode):
         if mode == "hits":
-            reroll_params = self.data._get_rerolls_dict_hits()
-            total_number_of_dice = self.data.active_number_of_attacks
             target = self.data.target_to_hit
             title = f"To Hit | Target: {target})"
         elif mode == "defense":
-            reroll_params = self.data._get_rerolls_dict_defense()
-            total_number_of_dice = self.data.expected_hits
             target = self.data.target_defense
             title = f"Defense | Target: {target})"
         elif mode == "morale":
-            reroll_params = self.data._get_rerolls_dict_morale()
-            total_number_of_dice = self.data.expected_wounds_from_hits
             if self.data.encounter_params['action_type'] == "Volley":
                 target = 6
             else:
                 target = self.data.target_resolve
             title = f"Morale | Target: {target})"
 
-        # Simulation placeholder, replace with your actual dice roll simulation
-        discrete_probabilities, cumulative_probabilities, unique = self.stats.simulate_dice_rolls(
-            round(total_number_of_dice), target, **reroll_params
-        )
+        simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
 
         fig = go.Figure()
 
         # Add traces for discrete and cumulative probabilities
-        fig.add_trace(go.Bar(x=unique, y=discrete_probabilities, name='Discrete', marker=dict(color='rgba(55, 128, 191, 0.7)')))
-        fig.add_trace(go.Scatter(x=unique, y=cumulative_probabilities, name='Cumulative', xaxis="x", yaxis="y2", mode='lines+markers', marker=dict(color='rgba(219, 64, 82, 0.6)')))
+        fig.add_trace(go.Bar(x=simulation_results["full_range"], y=simulation_results["discrete_probabilities"], name='Discrete', marker=dict(color='rgba(55, 128, 191, 0.7)')))
+        fig.add_trace(go.Scatter(x=simulation_results["full_range"], y=simulation_results["cumulative_probabilities"], name='Cumulative', xaxis="x", yaxis="y2", mode='lines+markers', marker=dict(color='rgba(219, 64, 82, 0.6)')))
 
         # Calculate mean or mode for annotation
-        mean_value = np.average(unique, weights=discrete_probabilities)
+        mean_value = np.average(simulation_results["full_range"], weights=simulation_results["discrete_probabilities"])
 
         # Add an annotation for the mean value directly on the x-axis
         fig.add_annotation(
