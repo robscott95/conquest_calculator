@@ -75,7 +75,7 @@ class Stats:
         # Fill in the probabilities
         for value, prob in zip(unique, discrete_probabilities):
             if 0 <= value <= total_number_of_dice:
-                discrete_probabilities_full[value - 1] = prob
+                discrete_probabilities_full[value] = prob
 
         # Calculate cumulative probabilities
         cumulative_probabilities_full = np.cumsum(discrete_probabilities_full[::-1])[::-1]
