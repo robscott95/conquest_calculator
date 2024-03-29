@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 class Stats:
     def __init__(self):
@@ -113,7 +114,6 @@ class Stats:
     def simulate_rolls_by_type(self, data, mode):
         reroll_params, total_number_of_dice, target = self.get_simulation_params(data, mode)
 
-                
         if mode in ["defense", "morale"]:
             previous_mode = "hits" if mode == "defense" else "defense"
             previous_simulation_results = self.simulate_rolls_by_type(data, previous_mode)
@@ -121,7 +121,9 @@ class Stats:
             
             aggregated_discrete_probabilities = np.zeros(max_full_range + 1)
             aggregated_cumulative_probabilities = np.zeros(max_full_range + 1)
+            aggregated_killed_stands_discrete_probabilities = np.zeros(max_full_range + 1)
             average_fail_counts = 0
+            average_killed_stands_count = 0
             
              # Aggregate results based on the distribution of previous phase outcomes
             for outcome, probability in zip(previous_simulation_results["full_range"], previous_simulation_results["discrete_probabilities"]):
@@ -142,8 +144,17 @@ class Stats:
                     # This assumes the length of weighted_discrete_probabilities aligns with aggregated results arrays
                     aggregated_discrete_probabilities += weighted_discrete_probabilities
 
+
+                    # Add data related to killed stands
                     average_fail_counts = average_fail_counts + np.mean(current_results["fail_counts"] * probability)
-                
+                    killed_stands = current_results["fail_counts"] / data.target_input_wounds_per_stand
+                    killed_stands = np.floor(killed_stands)
+                    unique, counts = np.unique(killed_stands, return_counts=True)
+                    killed_stands_discrete_probabilities = counts / 10000
+                    weighted_killed_stands_discrete_probabilities = killed_stands_discrete_probabilities * probability
+                    aggregated_killed_stands_discrete_probabilities += weighted_killed_stands_discrete_probabilities
+                    print(unique, counts)
+
             aggregated_cumulative_probabilities = np.cumsum(aggregated_discrete_probabilities[::-1])[::-1]
             aggregated_full_range = np.arange(0, max_full_range+1)
             simulation_results = {
@@ -151,6 +162,7 @@ class Stats:
                 "fail_counts": average_fail_counts,
                 "discrete_probabilities": aggregated_discrete_probabilities, 
                 "cumulative_probabilities": aggregated_cumulative_probabilities, 
+                "killed_stands_discrete_probabilities": aggregated_killed_stands_discrete_probabilities,
             }
         else:
             simulation_results = self.simulate_dice_rolls(total_number_of_dice, target, **reroll_params)
