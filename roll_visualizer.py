@@ -168,21 +168,25 @@ class VisualizeRollEstimation:
             simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
         elif mode == "defense":
             target = self.data.target_defense
-            title = f"Defense | Target: {target})"
+            title = f"Defense | Target: {target}"
             simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
         elif mode == "morale":
             if self.data.encounter_params['action_type'] == "Volley":
                 target = 6
             else:
                 target = self.data.target_resolve
-            title = f"Morale | Target: {target})"
+            title = f"Morale | Target: {target}"
             simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
         elif mode == "wounds":
             target = self.data.target_input_wounds_per_stand
-            title = f"Stands killed | Wounds per stand: {target})"
+            title = f"Wounds | Wounds per stand: {target}"
             simulation_results = self.stats.simulate_rolls_for_wounds(self.data)
+        elif mode == "stands_killed":
+            target = self.data.target_input_stands
+            title = f"Stands Killed | Stands: {target}"
+            simulation_results = self.stats.simulate_rolls_for_stands_killed(self.data)
 
-        if mode == "wounds":
+        if mode in ["wounds", "stands_killed"]:
             x = simulation_results["full_range"]
             y_discrete = simulation_results["discrete_probabilities"]
             y_cumulative = simulation_results["cumulative_probabilities"]
@@ -198,7 +202,10 @@ class VisualizeRollEstimation:
         fig.add_trace(go.Scatter(x=x, y=y_cumulative, name='Cumulative', xaxis="x", yaxis="y2", mode='lines+markers', marker=dict(color='rgba(219, 64, 82, 0.6)')))
 
         # Calculate mean or mode for annotation
-        mean_value = np.average(x, weights=y_discrete)
+        if np.sum(y_discrete) != 0:
+            mean_value = np.average(x, weights=y_discrete)
+        else:
+            mean_value = 0  # or whatever value makes sense in this context
 
         # Add an annotation for the mean value directly on the x-axis
         fig.add_annotation(
@@ -228,6 +235,39 @@ class VisualizeRollEstimation:
             line=dict(color="white", width=2),  # Thick white line
             yref="y2"
         )
+
+        # For wounds and stand killed add annotation for broken and shattered
+        if mode in ["wounds", "stands_killed"]:
+            break_point = self.data.wounds_needed_to_break if mode == "wounds" else self.data.number_of_stands_lost_needed_to_break
+            fig.add_annotation(
+                x=break_point, y=0,  # Adjust y to place the annotation just below the x-axis
+                xref="x", yref="y2",  # Use paper ref for y to position relative to the figure's height
+                text=f"Broken: {break_point:.0f}",
+                showarrow=True,
+                arrowhead=1,
+                arrowsize=1,
+                arrowwidth=2,
+                ax=0,
+                ay=0,
+                bgcolor="rgba(255, 255, 255, 0.8)",  # Semi-transparent white background
+                bordercolor="Black",
+                borderwidth=0.5,
+                font=dict(color="Black", size=12)
+            )
+            fig.add_shape(
+                type="line", 
+                x0=break_point, y0=0, x1=break_point, y1=1.05,  # Adjust these to control the line's direction and length
+                line=dict(color="black", width=3),  # Thick white line
+                yref="y2"
+            )
+            fig.add_shape(
+                type="line", 
+                x0=break_point, y0=0, x1=break_point, y1=1.05,  # Adjust these to control the line's direction and length
+                line=dict(color="white", width=2),  # Thick white line
+                yref="y2"
+            )
+
+
 
         # Layout configuration, including manual y-axis settings
         fig.update_layout(
