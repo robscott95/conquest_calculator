@@ -198,6 +198,7 @@ class Stats:
             morale_results = self.simulate_rolls_by_type(data, "morale")
             
             aggregated_discrete_probabilities = defense_results["fails"]["discrete_probabilities"] + morale_results["fails"]["discrete_probabilities"]
+            aggregated_discrete_probabilities /= np.sum(aggregated_discrete_probabilities)  # Normalize probabilities
             aggregated_cumulative_probabilities = np.cumsum(aggregated_discrete_probabilities[::-1])[::-1]
             aggregated_full_range = defense_results["fails"]["full_range"]
             
@@ -211,6 +212,7 @@ class Stats:
             defense_results = self.simulate_rolls_by_type(data, "defense")
             
             aggregated_discrete_probabilities = defense_results["fails"]["discrete_probabilities"]
+            aggregated_discrete_probabilities /= np.sum(aggregated_discrete_probabilities)  # Normalize probabilities
             aggregated_cumulative_probabilities = np.cumsum(aggregated_discrete_probabilities[::-1])[::-1]
             aggregated_full_range = defense_results["fails"]["full_range"]
             
