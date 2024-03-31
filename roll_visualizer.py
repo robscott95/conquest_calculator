@@ -165,35 +165,40 @@ class VisualizeRollEstimation:
         if mode == "hits":
             target = self.data.target_to_hit
             title = f"To Hit | Target: {target})"
+            simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
         elif mode == "defense":
             target = self.data.target_defense
             title = f"Defense | Target: {target})"
+            simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
         elif mode == "morale":
             if self.data.encounter_params['action_type'] == "Volley":
                 target = 6
             else:
                 target = self.data.target_resolve
             title = f"Morale | Target: {target})"
-        elif mode == "stands_killed":
+            simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
+        elif mode == "wounds":
             target = self.data.target_input_wounds_per_stand
             title = f"Stands killed | Wounds per stand: {target})"
+            simulation_results = self.stats.simulate_rolls_for_wounds(self.data)
 
-        simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
-
-        if mode == "stands_killed":
+        if mode == "wounds":
             x = simulation_results["full_range"]
-            #TODO: Add the full range
+            y_discrete = simulation_results["discrete_probabilities"]
+            y_cumulative = simulation_results["cumulative_probabilities"]
         else:
-            x = simulation_results["full_range"]
+            x = simulation_results["success"]["full_range"]
+            y_discrete = simulation_results["success"]["discrete_probabilities"]
+            y_cumulative = simulation_results["success"]["cumulative_probabilities"]
 
         fig = go.Figure()
 
         # Add traces for discrete and cumulative probabilities
-        fig.add_trace(go.Bar(x=x, y=simulation_results["discrete_probabilities"], name='Discrete', marker=dict(color='rgba(55, 128, 191, 0.7)')))
-        fig.add_trace(go.Scatter(x=x, y=simulation_results["cumulative_probabilities"], name='Cumulative', xaxis="x", yaxis="y2", mode='lines+markers', marker=dict(color='rgba(219, 64, 82, 0.6)')))
+        fig.add_trace(go.Bar(x=x, y=y_discrete, name='Discrete', marker=dict(color='rgba(55, 128, 191, 0.7)')))
+        fig.add_trace(go.Scatter(x=x, y=y_cumulative, name='Cumulative', xaxis="x", yaxis="y2", mode='lines+markers', marker=dict(color='rgba(219, 64, 82, 0.6)')))
 
         # Calculate mean or mode for annotation
-        mean_value = np.average(simulation_results["full_range"], weights=simulation_results["discrete_probabilities"])
+        mean_value = np.average(x, weights=y_discrete)
 
         # Add an annotation for the mean value directly on the x-axis
         fig.add_annotation(
@@ -230,7 +235,7 @@ class VisualizeRollEstimation:
             xaxis_title='Success Count',
             yaxis=dict(title='Discrete Probability (%)', tickformat='.0%', side="left", showgrid=True),
             yaxis2=dict(title='Cumulative Probability (%)', overlaying='y', side='right', range=[0, 1],
-                        tickvals=[0.25, 0.5, 0.75], showgrid=True, gridcolor='#BE445B', griddash='dash',
+                        tickvals=[0.25, 0.5, 0.75, 1], showgrid=True, gridcolor='#BE445B', griddash='dash',
                         tickformat='.0%'),
             showlegend=False,
             hovermode='x unified'

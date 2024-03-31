@@ -58,6 +58,10 @@ st.plotly_chart(fig, use_container_width=True, config=config)
 fig = visualizer.visualize_simulated_all()
 st.plotly_chart(fig, use_container_width=True, config=config)
 
+
+fig = visualizer.visualize_simulated_discrete_and_cumulative_distributions("wounds")
+st.plotly_chart(fig, use_container_width=True, config=config)
+
 col1, col2, col3 = st.columns(3)
 with col1:
     show_active_unit_summary(

@@ -57,38 +57,51 @@ class Stats:
 
         # Apply reroll criteria to initial rolls
         need_reroll = reroll_criteria(rolls)
-        
-        # Perform rerolls where criteria are met and ensure each die is only rerolled once
         reroll_indices = np.where(need_reroll)
         new_rolls = np.random.randint(1, 7, reroll_indices[0].shape)
         rolls[reroll_indices] = new_rolls
 
         # Recalculate success counts after rerolls
         success_counts = np.sum(rolls <= target, axis=1)
+        fail_counts = total_number_of_dice - success_counts
 
-        unique, counts = np.unique(success_counts, return_counts=True)
-        discrete_probabilities = counts / simulations
+        # Calculate probabilities for success
+        unique_success, counts_success = np.unique(success_counts, return_counts=True)
+        discrete_probabilities_success = counts_success / simulations
+        full_range = np.arange(0, total_number_of_dice + 1)
+        discrete_probabilities_success_full = np.zeros(total_number_of_dice + 1)
+        cumulative_probabilities_success_full = np.zeros(total_number_of_dice + 1)
+        for value, prob in zip(unique_success, discrete_probabilities_success):
+            discrete_probabilities_success_full[value] = prob
+        cumulative_probabilities_success_full = np.cumsum(discrete_probabilities_success_full[::-1])[::-1]
 
-        full_range = np.arange(0, total_number_of_dice+1)
-        discrete_probabilities_full = np.zeros(total_number_of_dice + 1)
-        cumulative_probabilities_full = np.zeros(total_number_of_dice + 1)
+        # Calculate probabilities for fails
+        unique_fail, counts_fail = np.unique(fail_counts, return_counts=True)
+        discrete_probabilities_fail = counts_fail / simulations
+        discrete_probabilities_fail_full = np.zeros(total_number_of_dice + 1)
+        cumulative_probabilities_fail_full = np.zeros(total_number_of_dice + 1)
+        for value, prob in zip(unique_fail, discrete_probabilities_fail):
+            discrete_probabilities_fail_full[value] = prob
+        cumulative_probabilities_fail_full = np.cumsum(discrete_probabilities_fail_full[::-1])[::-1]
 
-        # Fill in the probabilities
-        for value, prob in zip(unique, discrete_probabilities):
-            if 0 <= value <= total_number_of_dice:
-                discrete_probabilities_full[value] = prob
-
-        # Calculate cumulative probabilities
-        cumulative_probabilities_full = np.cumsum(discrete_probabilities_full[::-1])[::-1]
-
-        return {
-            "success_counts": success_counts,
-            "fail_counts": np.clip(total_number_of_dice - success_counts, a_min=0, a_max=None),
-            "full_range": full_range,
-            "unique": unique,
-            "discrete_probabilities": discrete_probabilities_full, 
-            "cumulative_probabilities": cumulative_probabilities_full, 
+        results = {
+            "success": {
+                "counts": success_counts,
+                "unique": unique_success,
+                "full_range": full_range,
+                "discrete_probabilities": discrete_probabilities_success_full, 
+                "cumulative_probabilities": cumulative_probabilities_success_full, 
+            },
+            "fails": {
+                "counts": fail_counts,
+                "unique": unique_fail,
+                "full_range": full_range,
+                "discrete_probabilities": discrete_probabilities_fail_full, 
+                "cumulative_probabilities": cumulative_probabilities_fail_full, 
+            }
         }
+        print(results)
+        return results
     
     def get_simulation_params(self, data, mode):
         if mode == "hits":
@@ -117,53 +130,98 @@ class Stats:
         if mode in ["defense", "morale"]:
             previous_mode = "hits" if mode == "defense" else "defense"
             previous_simulation_results = self.simulate_rolls_by_type(data, previous_mode)
-            max_full_range = max(previous_simulation_results["full_range"])
+            max_full_range = max(previous_simulation_results["success"]["full_range"])
             
-            aggregated_discrete_probabilities = np.zeros(max_full_range + 1)
-            aggregated_cumulative_probabilities = np.zeros(max_full_range + 1)
-            aggregated_killed_stands_discrete_probabilities = np.zeros(max_full_range + 1)
-            average_fail_counts = 0
-            average_killed_stands_count = 0
+            # Initialize aggregated probabilities arrays
+            aggregated_discrete_probabilities_success = np.zeros(max_full_range + 1)
+            aggregated_cumulative_probabilities_success = np.zeros(max_full_range + 1)
+            aggregated_discrete_probabilities_fails = np.zeros(max_full_range + 1)
+            aggregated_cumulative_probabilities_fails = np.zeros(max_full_range + 1)
             
-             # Aggregate results based on the distribution of previous phase outcomes
-            for outcome, probability in zip(previous_simulation_results["full_range"], previous_simulation_results["discrete_probabilities"]):
-                if probability > 0:  # Only simulate for outcomes that occurred
-                    current_results = self.simulate_dice_rolls(
-                        outcome, target, simulations=10000, **reroll_params  # Simulate based on the outcome as total dice
-                    )
+            states = ['success', 'fails']
+            # Aggregate results based on the distribution of previous phase outcomes
+            for state in states:
+                for outcome, probability in zip(previous_simulation_results[state]["full_range"], previous_simulation_results[state]["discrete_probabilities"]):
+                    if probability > 0:  # Only simulate for outcomes that occurred
+                        current_results = self.simulate_dice_rolls(
+                            outcome, target, simulations=10000, **reroll_params  # Simulate based on the outcome as total dice
+                        )
 
-                    max_full_range = max(max_full_range, max(current_results['full_range']))
-                    # The simulation returns a dictionary; extract discrete probabilities
-                    discrete_probabilities = np.zeros(max_full_range + 1)
-                    discrete_probabilities[:len(current_results["discrete_probabilities"])] = current_results["discrete_probabilities"]
-                    
-                    # Weight discrete probabilities by the probability of the outcome occurring
-                    weighted_discrete_probabilities = discrete_probabilities * probability
-                    
-                    # Aggregate weighted probabilities into the total distribution
-                    # This assumes the length of weighted_discrete_probabilities aligns with aggregated results arrays
-                    aggregated_discrete_probabilities += weighted_discrete_probabilities
+                        # Update max full range if necessary
+                        current_max_full_range = len(current_results[state]["discrete_probabilities"])
+                        max_full_range = max(max_full_range, current_max_full_range - 1)
+                        
+                        # Weight discrete probabilities by the probability of the outcome occurring
+                        weighted_discrete_probabilities = current_results[state]["discrete_probabilities"] * probability
+                        
+                        # Extend aggregated arrays if necessary
+                        if len(aggregated_discrete_probabilities_success) < len(weighted_discrete_probabilities):
+                            extra_zeros = np.zeros(len(weighted_discrete_probabilities) - len(aggregated_discrete_probabilities_success))
+                            aggregated_discrete_probabilities_success = np.concatenate((aggregated_discrete_probabilities_success, extra_zeros))
+                            aggregated_discrete_probabilities_fails = np.concatenate((aggregated_discrete_probabilities_fails, extra_zeros))
+                        
+                        # Aggregate weighted probabilities into the total distribution
+                        if state == 'success':
+                            aggregated_discrete_probabilities_success[:len(weighted_discrete_probabilities)] += weighted_discrete_probabilities
+                        else:
+                            aggregated_discrete_probabilities_fails[:len(weighted_discrete_probabilities)] += weighted_discrete_probabilities
 
-
-                    # Add data related to killed stands
-                    average_fail_counts = average_fail_counts + np.mean(current_results["fail_counts"] * probability)
-                    killed_stands = current_results["fail_counts"] / data.target_input_wounds_per_stand
-                    killed_stands = np.floor(killed_stands)
-                    unique, counts = np.unique(killed_stands, return_counts=True)
-                    killed_stands_discrete_probabilities = counts / 10000
-                    weighted_killed_stands_discrete_probabilities = killed_stands_discrete_probabilities * probability
-                    aggregated_killed_stands_discrete_probabilities += weighted_killed_stands_discrete_probabilities
-                    print(unique, counts)
-
-            aggregated_cumulative_probabilities = np.cumsum(aggregated_discrete_probabilities[::-1])[::-1]
+            # Calculate cumulative probabilities
+            aggregated_cumulative_probabilities_success = np.cumsum(aggregated_discrete_probabilities_success[::-1])[::-1]
+            aggregated_cumulative_probabilities_fails = np.cumsum(aggregated_discrete_probabilities_fails[::-1])[::-1]
+            
+            # Create aggregated full range array
             aggregated_full_range = np.arange(0, max_full_range+1)
+            
+            # Combine aggregated results
             simulation_results = {
-                "full_range": aggregated_full_range,
-                "fail_counts": average_fail_counts,
-                "discrete_probabilities": aggregated_discrete_probabilities, 
-                "cumulative_probabilities": aggregated_cumulative_probabilities, 
-                "killed_stands_discrete_probabilities": aggregated_killed_stands_discrete_probabilities,
+                "success": {
+                    "full_range": aggregated_full_range,
+                    "discrete_probabilities": aggregated_discrete_probabilities_success,
+                    "cumulative_probabilities": aggregated_cumulative_probabilities_success,
+                },
+                "fails": {
+                    "full_range": aggregated_full_range,
+                    "discrete_probabilities": aggregated_discrete_probabilities_fails,
+                    "cumulative_probabilities": aggregated_cumulative_probabilities_fails,
+                }
             }
         else:
             simulation_results = self.simulate_dice_rolls(total_number_of_dice, target, **reroll_params)
         return simulation_results
+
+    def simulate_rolls_for_wounds(self, data):
+        mode = data.encounter_params['action_type']
+        
+        if mode == "Clash":
+            defense_results = self.simulate_rolls_by_type(data, "defense")
+            morale_results = self.simulate_rolls_by_type(data, "morale")
+            
+            aggregated_discrete_probabilities = defense_results["fails"]["discrete_probabilities"] + morale_results["fails"]["discrete_probabilities"]
+            aggregated_cumulative_probabilities = np.cumsum(aggregated_discrete_probabilities[::-1])[::-1]
+            aggregated_full_range = defense_results["fails"]["full_range"]
+            
+            return {
+                "discrete_probabilities": aggregated_discrete_probabilities,
+                "cumulative_probabilities": aggregated_cumulative_probabilities,
+                "full_range": aggregated_full_range
+            }
+        
+        elif mode == "Volley":
+            defense_results = self.simulate_rolls_by_type(data, "defense")
+            
+            aggregated_discrete_probabilities = defense_results["fails"]["discrete_probabilities"]
+            aggregated_cumulative_probabilities = np.cumsum(aggregated_discrete_probabilities[::-1])[::-1]
+            aggregated_full_range = defense_results["fails"]["full_range"]
+            
+            return {
+                "discrete_probabilities": aggregated_discrete_probabilities,
+                "cumulative_probabilities": aggregated_cumulative_probabilities,
+                "full_range": aggregated_full_range
+            }
+        
+        else:
+            raise ValueError("Invalid mode. Only 'Clash' and 'Volley' modes are supported.")
+
+    def simulate_killed_stands(self):
+        pass

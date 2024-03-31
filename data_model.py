@@ -218,3 +218,5 @@ class EngagementDataModel:
     
     def get_killed_stands(self, wounds):
         return math.floor(wounds / self.target_input_wounds_per_stand)
+    
+    # def 
