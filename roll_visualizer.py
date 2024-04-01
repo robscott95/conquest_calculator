@@ -312,7 +312,10 @@ class VisualizeRollEstimation:
             showlegend=False,
             hovermode='x unified'
         )
-
+        fig.layout.xaxis.fixedrange = True
+        fig.layout.yaxis.fixedrange = True
+        fig.layout.yaxis2.fixedrange = True
+        
         return fig
 
     def visualize_simulated_all(self):
