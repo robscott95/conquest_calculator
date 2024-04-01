@@ -5,9 +5,9 @@ from views.special_abilities.input import show as show_input_special_abilities
 
 def show(
     initial_target_attack=3,
-    initial_no_of_attacks=4,
-    initial_no_of_stands_all=3,
-    initial_no_of_stands_engaged=3
+    initial_no_of_attacks=10,
+    initial_no_of_stands_all=1,
+    initial_no_of_stands_engaged=1
 ):
     # Collapsible section for Unit Stats
     with st.container(border=True):

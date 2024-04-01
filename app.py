@@ -58,6 +58,10 @@ st.plotly_chart(fig, use_container_width=True, config=config)
 fig = visualizer.visualize_simulated_all()
 st.plotly_chart(fig, use_container_width=True, config=config)
 
+
+fig = visualizer.visualize_simulated_wounds_and_stands_killed()
+st.plotly_chart(fig, use_container_width=True, config=config)
+
 col1, col2, col3 = st.columns(3)
 with col1:
     show_active_unit_summary(
@@ -74,7 +78,9 @@ with col2:
         engagement_data.target_input_evasion_value,
         engagement_data.target_input_resolve_value,
         engagement_data.target_regiment_size_resolve_bonus,
-        engagement_data.target_input_special_abilities
+        engagement_data.target_input_special_abilities,
+        engagement_data.target_input_wounds_per_stand,
+        engagement_data.target_wounds_total
     )
 
 with col3:
