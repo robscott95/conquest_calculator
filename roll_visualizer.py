@@ -239,10 +239,11 @@ class VisualizeRollEstimation:
         # For wounds and stand killed add annotation for broken and shattered
         if mode in ["wounds", "stands_killed"]:
             break_point = self.data.wounds_needed_to_break if mode == "wounds" else self.data.number_of_stands_lost_needed_to_break
+            shatter_point = break_point * 2
             fig.add_annotation(
-                x=break_point, y=0,  # Adjust y to place the annotation just below the x-axis
+                x=break_point, y=1,  # Adjust y to place the annotation just below the x-axis
                 xref="x", yref="y2",  # Use paper ref for y to position relative to the figure's height
-                text=f"Broken: {break_point:.0f}",
+                text=f"Break: {break_point:.0f}",
                 showarrow=True,
                 arrowhead=1,
                 arrowsize=1,
@@ -266,15 +267,46 @@ class VisualizeRollEstimation:
                 line=dict(color="white", width=2),  # Thick white line
                 yref="y2"
             )
+            
+            # shatter
+            fig.add_annotation(
+                x=shatter_point, y=1,  # Adjust y to place the annotation just below the x-axis
+                xref="x", yref="y2",  # Use paper ref for y to position relative to the figure's height
+                text=f"Shatter: {shatter_point:.0f}",
+                showarrow=True,
+                arrowhead=1,
+                arrowsize=1,
+                arrowwidth=2,
+                ax=0,
+                ay=0,
+                bgcolor="rgba(255, 255, 255, 0.8)",  # Semi-transparent white background
+                bordercolor="Black",
+                borderwidth=0.5,
+                font=dict(color="Black", size=12)
+            )
+            fig.add_shape(
+                type="line", 
+                x0=shatter_point, y0=0, x1=shatter_point, y1=1.05,  # Adjust these to control the line's direction and length
+                line=dict(color="black", width=3),  # Thick white line
+                yref="y2"
+            )
+            fig.add_shape(
+                type="line", 
+                x0=shatter_point, y0=0, x1=shatter_point, y1=1.05,  # Adjust these to control the line's direction and length
+                line=dict(color="white", width=2),  # Thick white line
+                yref="y2"
+            )
 
 
+        y_discrete_max = max(y_discrete)
+        y_discrete_max = y_discrete_max + y_discrete_max * 0.1
 
         # Layout configuration, including manual y-axis settings
         fig.update_layout(
             title=title,
             xaxis_title='Success Count',
-            yaxis=dict(title='Discrete Probability (%)', tickformat='.0%', side="left", showgrid=True),
-            yaxis2=dict(title='Cumulative Probability (%)', overlaying='y', side='right', range=[0, 1],
+            yaxis=dict(title='Discrete Probability (%)', tickformat='.0%', side="left", showgrid=True, range=[0, y_discrete_max]),
+            yaxis2=dict(title='Cumulative Probability (%)', overlaying='y', side='right', range=[0, 1.05],
                         tickvals=[0.25, 0.5, 0.75, 1], showgrid=True, gridcolor='#BE445B', griddash='dash',
                         tickformat='.0%'),
             showlegend=False,
@@ -299,6 +331,8 @@ class VisualizeRollEstimation:
 
         for i, mode in enumerate(modes, start=1):
             temp_fig = self.visualize_simulated_discrete_and_cumulative_distributions(mode)
+            
+            discrete_y_range_max = 0
             for trace in temp_fig.data:
                 secondary_y = 'yaxis' in trace and trace.yaxis == 'y2'
                 trace.hovertemplate = trace.name + ': %{y:.0%}<extra></extra>'
@@ -308,13 +342,15 @@ class VisualizeRollEstimation:
                 fig.add_shape(temp_fig.layout.shapes[0], col=i, row=1)
                 fig.add_shape(temp_fig.layout.shapes[1], col=i, row=1)
 
+                discrete_y_range_max = max(discrete_y_range_max, temp_fig.layout.yaxis.range[1])
+
         # # Configure the primary Y-axis (left) to be visible only on the first plot
                 
-        fig.update_yaxes(title_text='Discrete Probability (%)', tickformat='.0%', showgrid=True, 
+        fig.update_yaxes(title_text='Discrete Probability (%)', tickformat='.0%', showgrid=True, range=[0, discrete_y_range_max], 
                         secondary_y=False, row=1)
 
         # # Configure the secondary Y-axis (right) to be visible only on the last plot
-        fig.update_yaxes(title_text='Cumulative Probability (%)', tickformat='.0%', showgrid=True, range=[0, 1],
+        fig.update_yaxes(title_text='Cumulative Probability (%)', tickformat='.0%', showgrid=True, range=[0, 1.05],
                         tickvals=[.25, .5, .75], row=1, secondary_y=True, gridcolor='#BE445B', griddash='dash')
 
         # Set X-axis titles individually for each subplot
@@ -359,8 +395,8 @@ class VisualizeRollEstimation:
     
     def visualize_simulated_wounds_and_stands_killed(self):
         titles = [
-            f"Wounds |{self.data.target_input_wounds_per_stand}|",
-            f"Stands Killed |{self.data.killed_stands}|"
+            f"Wounds",
+            f"Stands Killed"
         ]
 
         # Initialize subplot with secondary Y-axis configuration for each column.
@@ -372,35 +408,61 @@ class VisualizeRollEstimation:
 
         for i, mode in enumerate(modes, start=1):
             temp_fig = self.visualize_simulated_discrete_and_cumulative_distributions(mode)
+            discrete_y_range_max = 0
             for trace in temp_fig.data:
-                fig.add_trace(trace, row=1, col=i)
+                secondary_y = 'yaxis' in trace and trace.yaxis == 'y2'
+                trace.hovertemplate = trace.name + ': %{y:.0%}<extra></extra>'
+                trace.showlegend = i == 2  # Show legend only for the second plot
+                fig.add_trace(trace, row=1, col=i, secondary_y=secondary_y)
+                    
+                # mean
+                fig.add_annotation(temp_fig.layout.annotations[0], col=i, row=1)
+                fig.add_shape(temp_fig.layout.shapes[0], col=i, row=1)
+                fig.add_shape(temp_fig.layout.shapes[1], col=i, row=1)
 
-        # Configure the primary Y-axis (left) to be visible only on the first plot
-        fig.update_yaxes(title_text='Discrete Probability (%)', tickformat='.0%', showgrid=True,
+                # broken
+                fig.add_annotation(temp_fig.layout.annotations[1], col=i, row=1)
+                fig.add_shape(temp_fig.layout.shapes[2], col=i, row=1)
+                fig.add_shape(temp_fig.layout.shapes[3], col=i, row=1)
+                
+                # shatter
+                fig.add_annotation(temp_fig.layout.annotations[2], col=i, row=1)
+                fig.add_shape(temp_fig.layout.shapes[4], col=i, row=1)
+                fig.add_shape(temp_fig.layout.shapes[5], col=i, row=1)
+                
+                # Get y-axis range from temp_fig and apply to current fig
+                discrete_y_range_max = max(discrete_y_range_max, temp_fig.layout.yaxis.range[1])
+                # y_range[1] = y_range[1] + (y_range[1] * 0.05)
+                # print(y_range)
+                # fig.update_yaxes(range=y_range, row=1, col=i)
+
+        # # Configure the primary Y-axis (left) to be visible only on the first plot
+                
+        fig.update_yaxes(title_text='Discrete Probability (%)', tickformat='.0%', showgrid=True, range=[0, discrete_y_range_max],
                         secondary_y=False, row=1)
 
-        # Configure the secondary Y-axis (right) to be visible only on the last plot
-        fig.update_yaxes(title_text='Cumulative Probability (%)', tickformat='.0%', showgrid=True, range=[0, 1],
+        # # Configure the secondary Y-axis (right) to be visible only on the last plot
+        fig.update_yaxes(title_text='Cumulative Probability (%)', tickformat='.0%', showgrid=True, range=[0, 1.05],
                         tickvals=[.25, .5, .75], row=1, secondary_y=True, gridcolor='#BE445B', griddash='dash')
 
         # Set X-axis titles individually for each subplot
-        for i in range(1, 3):
-            fig.update_xaxes(title_text='Success Count', row=1, col=i)
+        fig.update_xaxes(title_text='Wounds Count', row=1, col=1)
+        fig.update_xaxes(title_text='Stands Killed', row=1, col=2)
 
         fig.update_layout(
-            yaxis2=dict(
-                title={'text': ''},
+            yaxis2 = dict(
+                title = {'text': ''},
                 showticklabels=False,
             ),
-            yaxis3=dict(
-                title={'text': ''},
+            yaxis3 = dict(
+                title = {'text': ''},
                 showticklabels=False,
-            ),
+            )
         )
 
         fig.update_layout(
             height=300,  # Adjust height as necessary
-            width=800,  # Adjust width as necessary for 2 columns
+            width=1200,  # Adjust width as necessary for 3 columns
             hovermode='x unified',
             legend=dict(
                 orientation="h",  # Makes the legend horizontal

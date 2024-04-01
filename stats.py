@@ -152,7 +152,7 @@ class Stats:
         results_type = "success" if mode == "defense" else "fails"
         # Basically go through the previous simulation results and simulate for each outcome
         if previous_simulation_results:
-            for outcome, probability in zip(previous_simulation_results['success']["full_range"], previous_simulation_results['success']["discrete_probabilities"]):
+            for outcome, probability in zip(previous_simulation_results[results_type]["full_range"], previous_simulation_results[results_type]["discrete_probabilities"]):
                 if probability > 0:  # Only simulate for outcomes that occurred
                     current_results = self.simulate_dice_rolls(
                         outcome, target, simulations=10000, **reroll_params  # Simulate based on the outcome as total dice
