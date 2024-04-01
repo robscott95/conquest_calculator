@@ -223,7 +223,8 @@ class EngagementDataModel:
     @property
     def wounds_needed_to_break(self):
         return self.number_of_stands_lost_needed_to_break * self.target_input_wounds_per_stand
-
-    def get_killed_stands(self, wounds):
-        return math.floor(wounds / self.target_input_wounds_per_stand)
+    
+    @property
+    def killed_stands(self):
+        return math.floor(self.target_wounds_total / self.target_input_wounds_per_stand)
     

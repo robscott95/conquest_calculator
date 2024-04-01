@@ -356,3 +356,61 @@ class VisualizeRollEstimation:
         )
 
         return fig
+    
+    def visualize_simulated_wounds_and_stands_killed(self):
+        titles = [
+            f"Wounds |{self.data.target_input_wounds_per_stand}|",
+            f"Stands Killed |{self.data.killed_stands}|"
+        ]
+
+        # Initialize subplot with secondary Y-axis configuration for each column.
+        fig = make_subplots(rows=1, cols=2, subplot_titles=titles,
+                            specs=[[{"secondary_y": True}, {"secondary_y": True}]],
+                            horizontal_spacing=0.05)  # Adjust spacing as needed
+
+        modes = ["wounds", "stands_killed"]
+
+        for i, mode in enumerate(modes, start=1):
+            temp_fig = self.visualize_simulated_discrete_and_cumulative_distributions(mode)
+            for trace in temp_fig.data:
+                fig.add_trace(trace, row=1, col=i)
+
+        # Configure the primary Y-axis (left) to be visible only on the first plot
+        fig.update_yaxes(title_text='Discrete Probability (%)', tickformat='.0%', showgrid=True,
+                        secondary_y=False, row=1)
+
+        # Configure the secondary Y-axis (right) to be visible only on the last plot
+        fig.update_yaxes(title_text='Cumulative Probability (%)', tickformat='.0%', showgrid=True, range=[0, 1],
+                        tickvals=[.25, .5, .75], row=1, secondary_y=True, gridcolor='#BE445B', griddash='dash')
+
+        # Set X-axis titles individually for each subplot
+        for i in range(1, 3):
+            fig.update_xaxes(title_text='Success Count', row=1, col=i)
+
+        fig.update_layout(
+            yaxis2=dict(
+                title={'text': ''},
+                showticklabels=False,
+            ),
+            yaxis3=dict(
+                title={'text': ''},
+                showticklabels=False,
+            ),
+        )
+
+        fig.update_layout(
+            height=300,  # Adjust height as necessary
+            width=800,  # Adjust width as necessary for 2 columns
+            hovermode='x unified',
+            legend=dict(
+                orientation="h",  # Makes the legend horizontal
+                xanchor="center",  # Anchors the legend to the center
+                x=0.49,  # Positions the legend in the center of the axis (0.5 on a scale of 0 to 1)
+                y=1.3,  # Positions the legend below the x-axis. Adjust as needed.
+                yanchor="top",  # Anchors the y position of the legend from its top.
+            ),
+            legend_itemclick=False,
+            margin=dict(l=10, r=10, t=30, b=0),  # Minimize margins
+        )
+
+        return fig

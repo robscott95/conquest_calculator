@@ -150,6 +150,7 @@ class Stats:
         # Aggregate results based on the distribution of previous phase outcomes
         # use succcess simulation results for hits while fails for morale. 
         results_type = "success" if mode == "defense" else "fails"
+        # Basically go through the previous simulation results and simulate for each outcome
         if previous_simulation_results:
             for outcome, probability in zip(previous_simulation_results['success']["full_range"], previous_simulation_results['success']["discrete_probabilities"]):
                 if probability > 0:  # Only simulate for outcomes that occurred
@@ -241,21 +242,36 @@ class Stats:
         else:
             raise ValueError("Invalid mode. Only 'Clash' and 'Volley' modes are supported.")
 
-    def simulate_killed_stands(self, data):
+    def simulate_rolls_for_stands_killed(self, data):
         results = self.simulate_rolls_for_wounds(data)
         full_range = results["full_range"]
         discrete_probabilities = results["discrete_probabilities"]
-        wounds_per_stand = data.wounds_per_stand
+        cumulative_probabilities = results["cumulative_probabilities"]
+        wounds_per_stand = data.target_input_wounds_per_stand
 
-        # Calculate the number of stands killed for each number of wounds lost
-        stands_killed = np.ceil(full_range / wounds_per_stand)
+        # Calculate the maximum number of stands that could be killed
+        max_stands_killed = np.max(np.floor(full_range / wounds_per_stand))
 
-        # Calculate the discrete probabilities of stands killed
-        stands_killed_probabilities = np.zeros_like(stands_killed)
-        for i, probability in enumerate(discrete_probabilities):
-            stands_killed_probabilities[int(stands_killed[i])] += probability
+        # Initialize an array for the discrete probabilities of stands killed
+        stands_killed_probabilities = np.zeros(int(max_stands_killed) + 1)
+
+        # Accumulate the probabilities for each number of stands killed
+        for wounds, probability in zip(full_range, discrete_probabilities):
+            stands_killed = int(np.floor(wounds / wounds_per_stand))
+            if stands_killed <= max_stands_killed:
+                stands_killed_probabilities[stands_killed] += probability
+
+        # Since the probabilities for stands killed are already discrete and accumulated correctly,
+        # there's no need to collapse and trim as previously attempted.
+        # However, you may want to normalize these probabilities if they don't sum up to 1.
+        if np.sum(stands_killed_probabilities) != 1:
+            stands_killed_probabilities /= np.sum(stands_killed_probabilities)
+
+        # Calculate the cumulative probabilities from the discrete probabilities
+        cumulative_probabilities_for_stands = np.cumsum(stands_killed_probabilities[::-1])[::-1]
 
         return {
             "discrete_probabilities": stands_killed_probabilities,
-            "full_range": np.unique(stands_killed),
+            "cumulative_probabilities": cumulative_probabilities_for_stands,
+            "full_range": np.arange(len(stands_killed_probabilities)),  # Reflects the number of stands killed
         }
