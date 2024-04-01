@@ -392,6 +392,11 @@ class VisualizeRollEstimation:
             legend_itemclick=False,
             margin=dict(l=10, r=10, t=30, b=0),  # Minimize margins
         )
+        
+        fig.layout.xaxis.fixedrange = True
+        fig.layout.yaxis.fixedrange = True
+        fig.layout.yaxis2.fixedrange = True
+        
 
         return fig
     
@@ -473,5 +478,10 @@ class VisualizeRollEstimation:
             legend_itemclick=False,
             margin=dict(l=10, r=10, t=30, b=0),  # Minimize margins
         )
+        
+        fig.layout.xaxis.fixedrange = True
+        fig.layout.yaxis.fixedrange = True
+        fig.layout.yaxis2.fixedrange = True
+        
 
         return fig
