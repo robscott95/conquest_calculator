@@ -328,11 +328,10 @@ class VisualizeRollEstimation:
                             horizontal_spacing=0.05)  # Adjust spacing as needed
 
         modes = ["hits", "defense", "morale"]
-
+        
+        discrete_y_range_max = 0
         for i, mode in enumerate(modes, start=1):
             temp_fig = self.visualize_simulated_discrete_and_cumulative_distributions(mode)
-            
-            discrete_y_range_max = 0
             for trace in temp_fig.data:
                 secondary_y = 'yaxis' in trace and trace.yaxis == 'y2'
                 trace.hovertemplate = trace.name + ': %{y:.0%}<extra></extra>'
@@ -406,9 +405,9 @@ class VisualizeRollEstimation:
 
         modes = ["wounds", "stands_killed"]
 
+        discrete_y_range_max = 0
         for i, mode in enumerate(modes, start=1):
             temp_fig = self.visualize_simulated_discrete_and_cumulative_distributions(mode)
-            discrete_y_range_max = 0
             for trace in temp_fig.data:
                 secondary_y = 'yaxis' in trace and trace.yaxis == 'y2'
                 trace.hovertemplate = trace.name + ': %{y:.0%}<extra></extra>'
@@ -432,9 +431,6 @@ class VisualizeRollEstimation:
                 
                 # Get y-axis range from temp_fig and apply to current fig
                 discrete_y_range_max = max(discrete_y_range_max, temp_fig.layout.yaxis.range[1])
-                # y_range[1] = y_range[1] + (y_range[1] * 0.05)
-                # print(y_range)
-                # fig.update_yaxes(range=y_range, row=1, col=i)
 
         # # Configure the primary Y-axis (left) to be visible only on the first plot
                 
