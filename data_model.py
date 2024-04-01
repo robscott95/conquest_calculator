@@ -92,7 +92,7 @@ class EngagementDataModel:
         }
 
         if self.encounter_params['is_flank_attack']:
-            rerolls_dict['reroll_misses'] = {'value': True}
+            rerolls_dict['reroll_hits'] = {'value': True}
         
         # Apply negation logic
         # If is_reroll_misses is True, negate is_reroll_6s
