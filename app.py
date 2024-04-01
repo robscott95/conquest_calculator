@@ -51,7 +51,8 @@ config = {
     'staticPlot': False,  # Allows hover effects but prevents zoom, pan, etc.
     'scrollZoom': False,  # Disables zooming with scroll
     'showLink': False,  # Hides the link to edit chart on Plotly,
-    'displayModeBar': False
+    'displayModeBar': False,
+    'dragmode': False,
 }
 st.plotly_chart(fig, use_container_width=True, config=config)
 
