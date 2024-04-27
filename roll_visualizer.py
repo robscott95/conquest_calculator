@@ -185,6 +185,7 @@ class VisualizeRollEstimation:
             target = self.data.target_input_stands
             title = f"Stands Killed | Stands: {target}"
             simulation_results = self.stats.simulate_rolls_for_stands_killed(self.data)
+        # elif mode == "charge"
 
         if mode in ["wounds", "stands_killed"]:
             x = simulation_results["full_range"]

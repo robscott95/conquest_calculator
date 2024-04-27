@@ -44,7 +44,7 @@
         "value": false,
         "always_visible": false
     },
-    "is_double_hits_on_1s": {
+    "is_to_hits_mod_double_hits_on_1s": {
         "label": "Double hits on 1's",
         "value": false,
         "always_visible": false

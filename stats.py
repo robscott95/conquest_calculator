@@ -5,7 +5,9 @@ class Stats:
     def __init__(self):
         pass
 
-    def calc_expected_success(self, number_of_die, target, get_fails=False, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
+    def calc_expected_success(self, number_of_die, target, get_fails=False, reroll_1s=False, 
+                          reroll_6s=False, reroll_hits=False, reroll_misses=False, 
+                          mod_double_hits_on_1s=False, mod_double_fails_on_6s=False):
 
         p_success = target / 6
         p_fail = 1 - p_success
@@ -25,21 +27,29 @@ class Stats:
         expected_success = number_of_die * p_success
         expected_fail = number_of_die * p_fail
 
+        # Double hits on rolling a 1 and double fails on rolling a 6
+        if mod_double_hits_on_1s:
+            # Increase expected successes by additional success for each die roll of 1
+            expected_success += number_of_die * (1/6)
+        if mod_double_fails_on_6s:
+            # Increase expected fails by additional fail for each die roll of 6
+            expected_fail += number_of_die * (1/6)
+
         # Adjust for rerolling hits or misses
         if reroll_hits:
-            # Rerolling hits means taking the expected_success, applying the fail probability, and adding those successes back in
             expected_success -= expected_success * p_fail
-
         if reroll_misses:
-            # Rerolling misses means taking the expected_fail, applying the success probability, and adding those successes
             expected_success += expected_fail * p_success
-        
+
         if get_fails:
-            return number_of_die - expected_success
+            return expected_fail  # Return the total fails which might be doubled due to 'double_fails_6s'
 
         return expected_success
-    
-    def simulate_dice_rolls(self, total_number_of_dice, target, simulations=10000, reroll_1s=False, reroll_6s=False, reroll_hits=False, reroll_misses=False):
+        
+    # TODO: Add here to above and below functions to add "additional hits on 1 or 6s"
+    def simulate_dice_rolls(self, total_number_of_dice, target, simulations=10000, reroll_1s=False, 
+                            reroll_6s=False, reroll_hits=False, reroll_misses=False, 
+                            mod_double_hits_on_1s=False, mod_double_fails_on_6s=False):
         rolls = np.random.randint(1, 7, (simulations, total_number_of_dice))
 
         # Define reroll criteria based on boolean flags
@@ -61,11 +71,24 @@ class Stats:
         new_rolls = np.random.randint(1, 7, reroll_indices[0].shape)
         rolls[reroll_indices] = new_rolls
 
-        # Recalculate success counts after rerolls
+        # Calculate success counts, consider double hits and double fails
         success_counts = np.sum(rolls <= target, axis=1)
-        fail_counts = total_number_of_dice - success_counts
+        if mod_double_hits_on_1s:
+            double_hits_counts = np.sum(rolls == 1, axis=1)
+            success_counts += double_hits_counts
+            print(total_number_of_dice)
+            print(max(total_number_of_dice, max(success_counts)))
+            print('---')
 
-        # Calculate probabilities for success
+        fail_counts = total_number_of_dice - success_counts
+        if mod_double_fails_on_6s:
+            double_fails_counts = np.sum(rolls == 6, axis=1)
+            fail_counts += double_fails_counts
+
+        # update this value to reflect the highest possible number of dice
+        total_number_of_dice = max(total_number_of_dice, max(success_counts), max(fail_counts))
+
+        # Calculate probabilities for success and fails
         unique_success, counts_success = np.unique(success_counts, return_counts=True)
         discrete_probabilities_success = counts_success / simulations
         full_range = np.arange(0, total_number_of_dice + 1)
@@ -75,7 +98,6 @@ class Stats:
             discrete_probabilities_success_full[value] = prob
         cumulative_probabilities_success_full = np.cumsum(discrete_probabilities_success_full[::-1])[::-1]
 
-        # Calculate probabilities for fails
         unique_fail, counts_fail = np.unique(fail_counts, return_counts=True)
         discrete_probabilities_fail = counts_fail / simulations
         discrete_probabilities_fail_full = np.zeros(total_number_of_dice + 1)
@@ -83,6 +105,7 @@ class Stats:
         for value, prob in zip(unique_fail, discrete_probabilities_fail):
             discrete_probabilities_fail_full[value] = prob
         cumulative_probabilities_fail_full = np.cumsum(discrete_probabilities_fail_full[::-1])[::-1]
+
         results = {
             "success": {
                 "counts": success_counts,
@@ -104,26 +127,29 @@ class Stats:
     def get_simulation_params(self, data, mode):
         if mode == "hits":
             reroll_params = data._get_rerolls_dict_hits()
+            roll_mod_params = data._get_roll_mods_dict_hits()
             total_number_of_dice = data.active_number_of_attacks
             target = data.target_to_hit
 
         elif mode == "defense":
             reroll_params = data._get_rerolls_dict_defense()
+            roll_mod_params = data._get_roll_mods_dict_defense()
             total_number_of_dice = data.expected_hits
             target = data.target_defense
         elif mode == "morale":
             reroll_params = data._get_rerolls_dict_morale()
+            roll_mod_params = {} # TODO CHANGE
             total_number_of_dice = data.expected_wounds_from_hits
             if data.encounter_params['action_type'] == "Volley":
                 target = 6
             else:
                 target = data.target_resolve
 
-        return reroll_params, total_number_of_dice, target
+        return reroll_params, roll_mod_params, total_number_of_dice, target
 
 
     def simulate_rolls_by_type(self, data, mode, inner=False):
-        reroll_params, total_number_of_dice, target = self.get_simulation_params(data, mode)
+        reroll_params, roll_mod_params, total_number_of_dice, target = self.get_simulation_params(data, mode)
         previous_simulation_results = None
         if mode == "defense":
             # For 'defense', fetch results from 'hits'
@@ -155,7 +181,7 @@ class Stats:
             for outcome, probability in zip(previous_simulation_results[results_type]["full_range"], previous_simulation_results[results_type]["discrete_probabilities"]):
                 if probability > 0:  # Only simulate for outcomes that occurred
                     current_results = self.simulate_dice_rolls(
-                        outcome, target, simulations=10000, **reroll_params  # Simulate based on the outcome as total dice
+                        outcome, target, simulations=10000, **reroll_params, **roll_mod_params  # Simulate based on the outcome as total dice
                     )
 
                     # Update max full range if necessary
@@ -200,7 +226,7 @@ class Stats:
                 }
             }
         else:
-            simulation_results = self.simulate_dice_rolls(total_number_of_dice, target, **reroll_params)
+            simulation_results = self.simulate_dice_rolls(total_number_of_dice, target, **reroll_params, **roll_mod_params)
         return simulation_results
 
     def simulate_rolls_for_wounds(self, data):

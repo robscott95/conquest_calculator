@@ -50,7 +50,7 @@ class EngagementDataModel:
             return 3
         else:
             return 0
-        
+
     def _get_rerolls_dict_hits(self):
         rerolls_dict = {
             key.replace("is_to_hits_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
@@ -67,6 +67,14 @@ class EngagementDataModel:
             rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
         
         return rerolls_dict
+
+    def _get_roll_mods_dict_hits(self):
+        mods_dict = {
+            key.replace("is_to_hits_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "is_to_hits_mod" in key and ability.get("value") is True
+        }
+    
+        return mods_dict
     
     def _get_rerolls_dict_defense(self):
         rerolls_dict = {
@@ -84,6 +92,14 @@ class EngagementDataModel:
             rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
         
         return rerolls_dict
+
+    def _get_roll_mods_dict_defense(self):
+        mods_dict = {
+            key.replace("is_to_defense_", ""): ability["value"] for key, ability in self.target_input_special_abilities.items()
+            if "is_to_defense_mod" in key and ability.get("value") is True
+        }
+    
+        return mods_dict
 
     def _get_rerolls_dict_morale(self):
         rerolls_dict = {
@@ -116,8 +132,8 @@ class EngagementDataModel:
         number_of_attacks = (self.active_input_number_of_attacks_value * self.active_input_attacking_stands)
         number_of_attacks = number_of_attacks + support_to_hits + self.active_input_special_abilities['is_leader']['value']
 
-        if self.active_input_special_abilities['is_double_hits_on_1s']['value']:
-            number_of_attacks += number_of_attacks * 1/6
+        # if self.active_input_special_abilities['is_double_hits_on_1s']['value']:
+        #     number_of_attacks += number_of_attacks * 1/6
 
         return number_of_attacks
     
@@ -165,7 +181,8 @@ class EngagementDataModel:
         active_number_of_attacks = self.active_number_of_attacks
         target_to_hit = self.target_to_hit
         rerolls_params = self._get_rerolls_dict_hits()
-        return self.stats.calc_expected_success(active_number_of_attacks, target_to_hit, **rerolls_params)
+        mods_params = self._get_roll_mods_dict_hits()
+        return self.stats.calc_expected_success(active_number_of_attacks, target_to_hit, **rerolls_params, **mods_params)
 
     @property
     def expected_wounds_from_hits(self):
@@ -174,7 +191,8 @@ class EngagementDataModel:
         expected_hits = self.expected_hits
         target_defense = self.target_defense
         rerolls_params = self._get_rerolls_dict_defense()
-        return self.stats.calc_expected_success(expected_hits, target_defense, get_fails=True, **rerolls_params)
+        mods_params = self._get_roll_mods_dict_defense()
+        return self.stats.calc_expected_success(expected_hits, target_defense, get_fails=True, **rerolls_params, **mods_params)
     
     @property
     def expected_wounds_from_morale(self):

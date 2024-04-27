@@ -23,6 +23,11 @@
         "value": false,
         "always_visible": false
     },
+    "is_to_defense_mod_double_fails_on_6s": {
+        "label": "Double Wounds from Defense on 6's",
+        "value": false,
+        "always_visible": false
+    },
     "is_to_morale_reroll_hits": {
         "label": "Re-roll Morale Saves",
         "value": false,
