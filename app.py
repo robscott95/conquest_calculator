@@ -17,6 +17,7 @@ import time
 
 # Custom HTML to force desktop view
 st.set_page_config(page_title='Conquest Wound Calculator', page_icon=None, layout="centered")
+st.title("Conquest Wound Calculator")
 
 with st.sidebar:
     st.header("Options")
