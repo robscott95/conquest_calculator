@@ -146,7 +146,6 @@ class VisualizeRollEstimation:
                 font_color='black',
                 font_size=20,
             ),
-            dragmode=False,
             legend=dict(
                 orientation="h",  # Makes the legend horizontal
                 xanchor="center",  # Anchors the legend to the center
@@ -156,6 +155,7 @@ class VisualizeRollEstimation:
             ),
             legend_itemclick=False,
             legend_itemdoubleclick=False,
+            dragmode=False,
         )
         # Apply layout of individual plots if needed, or make further adjustments
         
@@ -311,7 +311,8 @@ class VisualizeRollEstimation:
                         tickvals=[0.25, 0.5, 0.75, 1], showgrid=True, gridcolor='#BE445B', griddash='dash',
                         tickformat='.0%'),
             showlegend=False,
-            hovermode='x unified'
+            hovermode='x unified',
+            dragmode=False,
         )
         fig.layout.xaxis.fixedrange = True
         fig.layout.yaxis.fixedrange = True
@@ -392,6 +393,7 @@ class VisualizeRollEstimation:
             ),
             legend_itemclick=False,
             margin=dict(l=10, r=10, t=30, b=0),  # Minimize margins
+            dragmode=False,
         )
         
         fig.layout.xaxis.fixedrange = True
@@ -478,6 +480,7 @@ class VisualizeRollEstimation:
             ),
             legend_itemclick=False,
             margin=dict(l=10, r=10, t=30, b=0),  # Minimize margins
+            dragmode=False,
         )
         
         fig.layout.xaxis.fixedrange = True

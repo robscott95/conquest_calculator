@@ -16,18 +16,7 @@ import matplotlib.pyplot as plt
 import time
 
 # Custom HTML to force desktop view
-html_string = """
-    <meta name="viewport" content="width=1024">
-    <script type="text/javascript">
-    // JavaScript to possibly redirect or resize
-    if (screen.width <= 800) {
-        document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1024');
-    }
-    </script>
-"""
-
 st.set_page_config(page_title='Conquest Wound Calculator', page_icon=None, layout="centered")
-st.markdown(html_string, unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("Options")
@@ -62,8 +51,7 @@ config = {
     'staticPlot': False,  # Allows hover effects but prevents zoom, pan, etc.
     'scrollZoom': False,  # Disables zooming with scroll
     'showLink': False,  # Hides the link to edit chart on Plotly,
-    'displayModeBar': False,
-    'dragmode': False,
+    'displayModeBar': False
 }
 st.plotly_chart(fig, use_container_width=True, config=config)
 
