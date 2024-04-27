@@ -76,10 +76,7 @@ class Stats:
         if mod_double_hits_on_1s:
             double_hits_counts = np.sum(rolls == 1, axis=1)
             success_counts += double_hits_counts
-            print(total_number_of_dice)
-            print(max(total_number_of_dice, max(success_counts)))
-            print('---')
-
+            
         fail_counts = total_number_of_dice - success_counts
         if mod_double_fails_on_6s:
             double_fails_counts = np.sum(rolls == 6, axis=1)
