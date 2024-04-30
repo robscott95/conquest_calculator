@@ -4,22 +4,18 @@ import math
 class Stats:
     def __init__(self):
         pass
-
     def calc_expected_success(self, number_of_die, target, get_fails=False, reroll_1s=False, 
-                          reroll_6s=False, reroll_hits=False, reroll_misses=False, 
-                          mod_double_hits_on_1s=False, mod_double_fails_on_6s=False):
-
+                                reroll_6s=False, reroll_hits=False, reroll_misses=False, 
+                                mod_double_hits_on_1s=False, mod_double_fails_on_6s=False):
         p_success = target / 6
         p_fail = 1 - p_success
 
         # Adjust probabilities for rerolling 1s and 6s
         if reroll_6s:
-            # If rerolling 6s, effectively reduce the failure probability by the chance of failing and then succeeding.
             p_fail -= (1/6) * p_success
             p_success += (1/6) * p_success
 
         if reroll_1s:
-            # If rerolling 1s, effectively reduce the success probability by the chance of succeeding and then failing.
             p_success -= (1/6) * p_fail
             p_fail += (1/6) * p_fail
 
@@ -29,20 +25,23 @@ class Stats:
 
         # Double hits on rolling a 1 and double fails on rolling a 6
         if mod_double_hits_on_1s:
-            # Increase expected successes by additional success for each die roll of 1
             expected_success += number_of_die * (1/6)
         if mod_double_fails_on_6s:
-            # Increase expected fails by additional fail for each die roll of 6
             expected_fail += number_of_die * (1/6)
 
         # Adjust for rerolling hits or misses
         if reroll_hits:
-            expected_success -= expected_success * p_fail
+            additional_fails = expected_success * p_fail
+            expected_success -= additional_fails
+            expected_fail += additional_fails
+
         if reroll_misses:
-            expected_success += expected_fail * p_success
+            additional_success = expected_fail * p_success
+            expected_success += additional_success
+            expected_fail -= additional_success
 
         if get_fails:
-            return expected_fail  # Return the total fails which might be doubled due to 'double_fails_6s'
+            return expected_fail  # Return the total fails which might be doubled due to 'mod_double_fails_on_6s'
 
         return expected_success
         
@@ -76,7 +75,7 @@ class Stats:
         if mod_double_hits_on_1s:
             double_hits_counts = np.sum(rolls == 1, axis=1)
             success_counts += double_hits_counts
-            
+
         fail_counts = total_number_of_dice - success_counts
         if mod_double_fails_on_6s:
             double_fails_counts = np.sum(rolls == 6, axis=1)
@@ -142,6 +141,12 @@ class Stats:
             else:
                 target = data.target_resolve
 
+        elif mode == "charge":
+            reroll_params = data._get_rerolls_dict_charge()
+            roll_mod_params = data._get_roll_mods_dict_charge()
+            total_number_of_dice = data.active_number_of_impact_attacks  
+            target = data.target_to_hit
+
         return reroll_params, roll_mod_params, total_number_of_dice, target
 
 
@@ -159,7 +164,6 @@ class Stats:
             previous_mode = "defense"
             # The crucial part is to make sure 'defense' has considered 'hits', which should be the case per the logic above
             previous_simulation_results = self.simulate_rolls_by_type(data, previous_mode, inner=True)
-
 
         max_full_range_success = max(previous_simulation_results["success"]["full_range"]) if previous_simulation_results else 0
         max_full_range_fails = max(previous_simulation_results["fails"]["full_range"]) if previous_simulation_results else 0
@@ -261,6 +265,7 @@ class Stats:
                 "cumulative_probabilities": aggregated_cumulative_probabilities,
                 "full_range": aggregated_full_range
             }
+        
         
         else:
             raise ValueError("Invalid mode. Only 'Clash' and 'Volley' modes are supported.")

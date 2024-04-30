@@ -46,7 +46,7 @@ class EngagementDataModel:
             return 1
         elif 7 <= self.target_input_stands <= 9:
             return 2
-        elif 9 <= self.target_input_stands:
+        elif 10 <= self.target_input_stands:
             return 3
         else:
             return 0
@@ -67,11 +67,36 @@ class EngagementDataModel:
             rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
         
         return rerolls_dict
+    
+    def _get_rerolls_dict_impact_hits(self):
+        rerolls_dict = {
+            key.replace("is_to_impact_hits_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "is_to_impact_hits_reroll" in key and ability.get("value") is True
+        }
+        
+        # Apply negation logic
+        # If is_reroll_misses is True, negate is_reroll_6s
+        if 'reroll_misses' in rerolls_dict:
+            rerolls_dict.pop('reroll_6s', None)  # Remove 'reroll_6s' if it exists
+        
+        # If is_reroll_hits is True, negate is_reroll_1s
+        if 'reroll_hits' in rerolls_dict:
+            rerolls_dict.pop('reroll_1s', None)  # Remove 'reroll_1s' if it exists
+        
+        return rerolls_dict
 
     def _get_roll_mods_dict_hits(self):
         mods_dict = {
             key.replace("is_to_hits_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
             if "is_to_hits_mod" in key and ability.get("value") is True
+        }
+    
+        return mods_dict    
+    
+    def _get_roll_mods_dict_impact_hits(self):
+        mods_dict = {
+            key.replace("is_to_impact_hits_", ""): ability["value"] for key, ability in self.active_input_special_abilities.items()
+            if "is_to_impact_hits_mod" in key and ability.get("value") is True
         }
     
         return mods_dict
@@ -108,7 +133,7 @@ class EngagementDataModel:
         }
 
         if self.encounter_params['is_flank_attack']:
-            rerolls_dict['reroll_hits'] = {'value': True}
+            rerolls_dict['reroll_hits'] = True
         
         # Apply negation logic
         # If is_reroll_misses is True, negate is_reroll_6s
@@ -123,19 +148,19 @@ class EngagementDataModel:
         
     @property
     def active_number_of_attacks(self):
-        if self.encounter_params['action_type'] == "Clash":
+        support_mod = 0
+        if self.encounter_params['action_type'] != "Volley":
             support_mod =  max(self.active_input_special_abilities['support_mod']['value'], 1)
-        elif self.encounter_params['action_type'] == "Volley":
-            support_mod = 0
         
         support_to_hits = (self.active_input_supporting_stands * support_mod)
         number_of_attacks = (self.active_input_number_of_attacks_value * self.active_input_attacking_stands)
         number_of_attacks = number_of_attacks + support_to_hits + self.active_input_special_abilities['is_leader']['value']
 
-        # if self.active_input_special_abilities['is_double_hits_on_1s']['value']:
-        #     number_of_attacks += number_of_attacks * 1/6
-
         return number_of_attacks
+    
+    @property
+    def active_number_of_impact_attacks(self):
+        return self.active_input_special_abilities["impact_attacks"]["value"] * self.active_input_stands
     
     @property
     def target_resolve(self):
@@ -173,6 +198,22 @@ class EngagementDataModel:
 
         highest_defense = max(defense_value, self.target_input_evasion_value)
         return min(highest_defense, 5)
+    
+    @property
+    def target_defense_impact(self):
+        defense_value = self.target_input_defense_value
+
+        if self.target_input_special_abilities['shield']['value'] > 0 and not self.encounter_params['is_flank_attack']:
+            defense_value += self.target_input_special_abilities['shield']['value']
+
+        if self.active_input_special_abilities['impact_cleave']['value'] > 0:
+            cleave_value = self.active_input_special_abilities['impact_cleave']['value']
+            if self.target_input_special_abilities['hardened']['value'] > 0:
+                cleave_value -= self.target_input_special_abilities['hardened']['value']
+            defense_value -= cleave_value
+
+        highest_defense = max(defense_value, self.target_input_evasion_value)
+        return min(highest_defense, 5)
 
     @property
     def expected_hits(self):
@@ -182,6 +223,18 @@ class EngagementDataModel:
         target_to_hit = self.target_to_hit
         rerolls_params = self._get_rerolls_dict_hits()
         mods_params = self._get_roll_mods_dict_hits()
+        return self.stats.calc_expected_success(active_number_of_attacks, target_to_hit, **rerolls_params, **mods_params)
+
+    @property
+    def expected_impact_hits(self):
+        # unpacking it here not to influence the "rerolls_param" as some target calc funcs can 
+        # modify the rerolls dict.
+        active_number_of_attacks = self.active_number_of_impact_attacks
+        target_to_hit = self.target_to_hit
+        if self.active_input_special_abilities['is_inspired']['value']:
+            target_to_hit -= 1
+        rerolls_params = self._get_rerolls_dict_impact_hits()
+        mods_params = self._get_roll_mods_dict_impact_hits()
         return self.stats.calc_expected_success(active_number_of_attacks, target_to_hit, **rerolls_params, **mods_params)
 
     @property
@@ -195,14 +248,24 @@ class EngagementDataModel:
         return self.stats.calc_expected_success(expected_hits, target_defense, get_fails=True, **rerolls_params, **mods_params)
     
     @property
+    def expected_wounds_from_impact_hits(self):
+        # unpacking it here not to influence the "rerolls_param" as some target calc funcs can 
+        # modify the rerolls dict.
+        expected_hits = self.expected_impact_hits
+        target_defense = self.target_defense_impact
+        rerolls_params = self._get_rerolls_dict_defense()
+        mods_params = self._get_roll_mods_dict_defense()
+        return self.stats.calc_expected_success(expected_hits, target_defense, get_fails=True, **rerolls_params, **mods_params)
+    
+
+    @property
     def expected_wounds_from_morale(self):
         # unpacking it here not to influence the "rerolls_param" as some target calc funcs can 
         # modify the rerolls dict.
-        expected_wounds_from_hits = self.expected_wounds_from_hits
         target_resolve = self.target_resolve
         rerolls_params = self._get_rerolls_dict_morale()
-        if self.encounter_params['action_type'] == "Clash":
-            expected_wounds = self.stats.calc_expected_success(expected_wounds_from_hits, target_resolve, get_fails=True, **rerolls_params)
+        if self.encounter_params['action_type'] in ["Clash", "Charge + Clash"]:
+            expected_wounds = self.stats.calc_expected_success(self.expected_wounds_from_hits, target_resolve, get_fails=True, **rerolls_params)
         elif self.encounter_params['action_type'] == "Volley":
             expected_wounds = 0
         
@@ -210,13 +273,27 @@ class EngagementDataModel:
             expected_wounds = round(expected_wounds/2, 2)
 
         return expected_wounds
+    
+    @property
+    def expected_wounds_from_impact_morale(self):
+        # unpacking it here not to influence the "rerolls_param" as some target calc funcs can 
+        # modify the rerolls dict.
+        expected_hits = self.expected_wounds_from_impact_hits
+        target_defense = self.target_resolve
+        rerolls_params = self._get_rerolls_dict_morale()
+        print(rerolls_params)
+        mods_params = self._get_roll_mods_dict_defense()
+        return self.stats.calc_expected_success(expected_hits, target_defense, get_fails=True, **rerolls_params, **mods_params)
+    
 
     @property
     def expected_wounds_from_all(self):
         hit_wounds = self.expected_wounds_from_hits
         morale_wounds = self.expected_wounds_from_morale
+        charge_wounds = self.expected_wounds_from_impact_hits
+        charge_morale_wounds = self.expected_wounds_from_impact_morale
 
-        return hit_wounds + morale_wounds
+        return hit_wounds + morale_wounds + charge_wounds + charge_morale_wounds
 
     @property
     def target_wounds_total(self):

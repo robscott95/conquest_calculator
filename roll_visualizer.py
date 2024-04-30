@@ -109,57 +109,91 @@ class VisualizeRollEstimation:
         )
         return fig
     
-    def visualize_expected_hits_and_morale(self):
-        titles = ["To hit", "Morale"]
+    def visualize_expected_charge_morale(self):
+        fig = self.visualize_expected_dice_outcomes(
+            round(self.data.expected_wounds_from_impact_hits, 2), 
+            0,
+            round(self.data.expected_wounds_from_impact_morale, 2)
+        )
+        return fig
     
-        # Create a subplot layout: 2 rows, 1 column
-        fig = make_subplots(rows=2, cols=1, subplot_titles=titles, vertical_spacing=0.15)
-        
-        # Generate and add each subplot. Adjust these parameters as per your actual data
-        hits_fig = self.visualize_expected_hits()
-        morale_fig = self.visualize_expected_morale()
-        
-        # Since we cannot directly add figures to subplots, we extract data and layout from each and add to the main figure
-        for trace in hits_fig.data:
-            fig.add_trace(trace, row=1, col=1)
-            
-        for trace in morale_fig.data:
-            # remove traces
-            trace.showlegend = False  # Disable legend for this trace
-            fig.add_trace(trace, row=2, col=1)
-        
-        # Update layout if necessary
-        fig.update_xaxes(title_text='', showticklabels=False, zeroline=False, row=1, col=1)
-        fig.update_xaxes(title_text='', showticklabels=False, zeroline=False, row=2, col=1)
-        fig.update_yaxes(title_text='', showticklabels=False, zeroline=False, row=1, col=1)
-        fig.update_yaxes(title_text='', showticklabels=False, zeroline=False, row=2, col=1)
+    def visualize_expected_charge(self):
+        fig = self.visualize_expected_dice_outcomes(
+            round(self.data.active_number_of_impact_attacks, 2), 
+            round(self.data.expected_impact_hits, 2), 
+            round(self.data.expected_wounds_from_impact_hits, 2)
+        )
+        return fig
+    
+    def visualize_expected_all(self):
+        action_type = self.data.encounter_params['action_type']
+
+        # Mapping actions to functions
+        action_to_function = {
+            "Clash": {"To hit": self.visualize_expected_hits, "Morale": self.visualize_expected_morale},
+            "Volley": {"To hit": self.visualize_expected_hits},
+            "Charge": {"Charge": self.visualize_expected_charge, "Morale": self.visualize_expected_charge_morale},
+            "Charge + Clash": {
+                "Charge": self.visualize_expected_charge, 
+                "Charge Morale": self.visualize_expected_charge_morale,
+                "Clash": self.visualize_expected_hits,
+                "Clash Morale": self.visualize_expected_morale
+            }
+        }
+
+        chart_data_functions = action_to_function.get(action_type, {})
+        titles = list(chart_data_functions.keys())
+        num_charts = len(chart_data_functions)
+        row_heights = [0.5, 0.5] if num_charts == 2 else [1]
+
+        # Insert a spacer if action type is 'Charge + Clash'
+        if action_type == "Charge + Clash":
+            # Assuming 'Charge Morale' is the last of the first group, find its index and insert a spacer
+            spacer_index = titles.index("Charge Morale") + 1
+            titles.insert(spacer_index, "")  # Insert a blank title for the spacer
+            num_charts += 1  # Increase the number of charts to include the spacer
+            row_heights = [0.23, 0.23, 0.08, 0.23, 0.23]
+
+        fig = make_subplots(rows=num_charts, cols=1, subplot_titles=titles, vertical_spacing=0.25 * (1/num_charts), row_heights=row_heights)
+
+        # Populate each subplot with the respective figure
+        row = 1
+        for title in titles:
+            if title:  # Check if the title is not empty (spacer will have an empty title)
+                func = chart_data_functions[title]
+                chart_fig = func()
+                for trace in chart_fig.data:
+                    trace.showlegend = False  # Disable legend for all actual data traces
+                    fig.add_trace(trace, row=row, col=1)
+            # Update axes for each subplot
+            fig.update_xaxes(title_text='', showticklabels=False, zeroline=False, row=row, col=1)
+            fig.update_yaxes(title_text='', showticklabels=False, zeroline=False, row=row, col=1)
+            row += 1
+
+        # Add manual legend entries in reverse order
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='red'), name='Wounds', showlegend=True))
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='yellow'), name='Hits', showlegend=True))
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='green'), name='Total Dice', showlegend=True))
+
+        # Calculate height with diminishing increments
+        height_increments = [100, 100, 50, 50, 50]  # Adjusted for additional spacer
+        total_height = sum(height_increments[:num_charts])  # Sum the heights for the number of charts
+
+        # Update overall figure layout
         fig.update_layout(
             barmode='stack',
-            xaxis=dict(title='', showticklabels=False, zeroline=False),
-            yaxis=dict(title='', showticklabels=False, zeroline=False),
-            margin=dict(l=10, r=10, t=30, b=0),  # Minimize margins
-            height=200,  # Adjust for a tighter fit vertically
+            height=total_height,  # Adjust height based on number of charts
             paper_bgcolor='rgba(0,0,0,0)',  # Transparent background
             plot_bgcolor='rgba(0,0,0,0)',  # Transparent background
-            hoverlabel=dict(
-                bgcolor="white",
-                font_color='black',
-                font_size=20,
-            ),
-            legend=dict(
-                orientation="h",  # Makes the legend horizontal
-                xanchor="center",  # Anchors the legend to the center
-                x=0.5,  # Positions the legend in the center of the axis (0.5 on a scale of 0 to 1)
-                y=-0.2,  # Positions the legend below the x-axis. Adjust as needed.
-                yanchor="bottom",  # Anchors the y position of the legend from its top.
-            ),
-            legend_itemclick=False,
-            legend_itemdoubleclick=False,
-            dragmode=False,
+            hoverlabel=dict(bgcolor="white", font_color='black', font_size=20),
+            legend=dict(orientation="h", xanchor="center", x=0.5, y=-0.4 * 1/num_charts, yanchor="bottom"),
+            legend_itemclick=False, legend_itemdoubleclick=False, dragmode=False,
+            margin=dict(l=10, r=10, t=30, b=10)  # Adjusted margins
         )
-        # Apply layout of individual plots if needed, or make further adjustments
-        
+
         return fig
+
+
     
     def visualize_simulated_discrete_and_cumulative_distributions(self, mode):
         if mode == "hits":

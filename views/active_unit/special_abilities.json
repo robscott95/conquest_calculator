@@ -1,4 +1,14 @@
 {
+    "impact_attacks": {
+        "label": "Impact (X)",
+        "value": 0,
+        "always_visible": true
+    },
+    "impact_cleave": {
+        "label": "Brutal Impact (X)",
+        "value": 0,
+        "always_visible": false
+    },
     "is_leader": {
         "label": "Leader",
         "value": false,

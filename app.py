@@ -47,7 +47,7 @@ engagement_data = EngagementDataModel(
 )
 
 visualizer = VisualizeRollEstimation(engagement_data)
-fig = visualizer.visualize_expected_hits_and_morale()
+
 config = {
     'staticPlot': False,  # Allows hover effects but prevents zoom, pan, etc.
     'scrollZoom': False,  # Disables zooming with scroll
@@ -55,6 +55,8 @@ config = {
     'displayModeBar': False,
     'doubleClickDelay': 0,
 }
+
+fig = visualizer.visualize_expected_all()
 st.plotly_chart(fig, use_container_width=True, config=config)
 
 fig = visualizer.visualize_simulated_all()
