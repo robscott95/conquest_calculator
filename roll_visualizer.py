@@ -40,11 +40,26 @@ class VisualizeRollEstimation:
         # make it so in one line all calculations are done, along with morale wound
         colors = ['#AFE07D', '#F4CD54', '#ff5f57', '#f7362d']
 
+        if total_dice == 0:
+            # If there are no attacks, return a text annotation
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=[1],
+                y=[1],
+                orientation='h',
+                name='Total Dice',
+                marker=dict(color=colors[0]),
+                text=[total_dice],  # Display the number on the bar
+                textposition='inside',  # Position the text inside the bar
+                hovertemplate='<b>Total Dice</b>: %{text}<extra></extra>',
+                textfont=dict(size=18, color='#0e1117')
+            ))
+            return fig
+
+
+
         # Calculate proportions
-        if successful_rolls > 0:
-            remaining_dice_proportion = total_dice - successful_rolls
-        else:
-            remaining_dice_proportion = total_dice - wounds_inflicted
+        remaining_dice_proportion = total_dice - successful_rolls
         successful_rolls_proportion = successful_rolls - wounds_inflicted
         wounds_inflicted_proportion = wounds_inflicted
         morale_wounds_inflicted_proportion = morale_wounds_inflicted 
@@ -162,8 +177,8 @@ class VisualizeRollEstimation:
         # Add manual legend entries in reverse order
         fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='#f7362d'), name='Morale Wounds', showlegend=True))
         fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='#ff5f57'), name='Hit Wounds', showlegend=True))
-        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='yellow'), name='Hits', showlegend=True))
-        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='green'), name='Total Dice', showlegend=True))
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='#F4CD54'), name='Hits', showlegend=True))
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='#AFE07D'), name='Total Dice', showlegend=True))
 
         # Calculate height with diminishing increments
         height_increments = [100, 100, 50, 50, 50]  # Adjusted for additional spacer
