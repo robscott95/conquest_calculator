@@ -36,8 +36,9 @@ class VisualizeRollEstimation:
         return fig
     
     @staticmethod
-    def visualize_expected_dice_outcomes(total_dice, successful_rolls, wounds_inflicted):
-        colors = ['#AFE07D', '#F4CD54', '#FE8D64']
+    def visualize_expected_dice_outcomes(total_dice, successful_rolls, wounds_inflicted, morale_wounds_inflicted):
+        # make it so in one line all calculations are done, along with morale wound
+        colors = ['#AFE07D', '#F4CD54', '#ff5f57', '#f7362d']
 
         # Calculate proportions
         if successful_rolls > 0:
@@ -46,7 +47,7 @@ class VisualizeRollEstimation:
             remaining_dice_proportion = total_dice - wounds_inflicted
         successful_rolls_proportion = successful_rolls - wounds_inflicted
         wounds_inflicted_proportion = wounds_inflicted
-
+        morale_wounds_inflicted_proportion = morale_wounds_inflicted 
         fig = go.Figure()
 
         # Add traces for Total Dice Thrown, Successful Rolls, and Wounds Inflicted
@@ -83,7 +84,19 @@ class VisualizeRollEstimation:
             marker=dict(color=colors[2]),
             text=[f"<b>{wounds_inflicted}</b>"],  # Display the number on the bar
             textposition='inside',  # Position the text inside the bar
-            hovertemplate='<b>Wounds</b>: %{text}<extra></extra>',
+            hovertemplate='<b>Hit Wounds</b>: %{text}<extra></extra>',
+            textfont=dict(size=18, color='#0e1117')
+        ))
+
+        fig.add_trace(go.Bar(
+            x=[morale_wounds_inflicted_proportion],
+            y=[1],
+            orientation='h',
+            name='Morale Wounds',
+            marker=dict(color=colors[3]),
+            text=[f"<b>{morale_wounds_inflicted}</b>"],  # Display the number on the bar
+            textposition='inside',  # Position the text inside the bar
+            hovertemplate='<b>Morale Wounds</b>: %{text}<extra></extra>',
             textfont=dict(size=18, color='#0e1117')
         ))
 
@@ -97,23 +110,8 @@ class VisualizeRollEstimation:
         fig = self.visualize_expected_dice_outcomes(
             round(self.data.active_number_of_attacks, 2), 
             round(self.data.expected_hits, 2), 
-            round(self.data.expected_wounds_from_hits, 2)
-        )
-        return fig
-
-    def visualize_expected_morale(self):
-        fig = self.visualize_expected_dice_outcomes(
-            round(self.data.expected_wounds_from_hits, 2), 
-            0,
+            round(self.data.expected_wounds_from_hits, 2),
             round(self.data.expected_wounds_from_morale, 2)
-        )
-        return fig
-    
-    def visualize_expected_charge_morale(self):
-        fig = self.visualize_expected_dice_outcomes(
-            round(self.data.expected_wounds_from_impact_hits, 2), 
-            0,
-            round(self.data.expected_wounds_from_impact_morale, 2)
         )
         return fig
     
@@ -121,7 +119,8 @@ class VisualizeRollEstimation:
         fig = self.visualize_expected_dice_outcomes(
             round(self.data.active_number_of_impact_attacks, 2), 
             round(self.data.expected_impact_hits, 2), 
-            round(self.data.expected_wounds_from_impact_hits, 2)
+            round(self.data.expected_wounds_from_impact_hits, 2),
+            round(self.data.expected_wounds_from_impact_morale, 2)
         )
         return fig
     
@@ -130,14 +129,12 @@ class VisualizeRollEstimation:
 
         # Mapping actions to functions
         action_to_function = {
-            "Clash": {"To hit": self.visualize_expected_hits, "Morale": self.visualize_expected_morale},
-            "Volley": {"To hit": self.visualize_expected_hits},
-            "Charge": {"Charge": self.visualize_expected_charge, "Morale": self.visualize_expected_charge_morale},
+            "Clash": {"Clash": self.visualize_expected_hits},
+            "Volley": {"Volley": self.visualize_expected_hits},
+            "Charge": {"Charge": self.visualize_expected_charge},
             "Charge + Clash": {
                 "Charge": self.visualize_expected_charge, 
-                "Charge Morale": self.visualize_expected_charge_morale,
                 "Clash": self.visualize_expected_hits,
-                "Clash Morale": self.visualize_expected_morale
             }
         }
 
@@ -145,14 +142,6 @@ class VisualizeRollEstimation:
         titles = list(chart_data_functions.keys())
         num_charts = len(chart_data_functions)
         row_heights = [0.5, 0.5] if num_charts == 2 else [1]
-
-        # Insert a spacer if action type is 'Charge + Clash'
-        if action_type == "Charge + Clash":
-            # Assuming 'Charge Morale' is the last of the first group, find its index and insert a spacer
-            spacer_index = titles.index("Charge Morale") + 1
-            titles.insert(spacer_index, "")  # Insert a blank title for the spacer
-            num_charts += 1  # Increase the number of charts to include the spacer
-            row_heights = [0.23, 0.23, 0.08, 0.23, 0.23]
 
         fig = make_subplots(rows=num_charts, cols=1, subplot_titles=titles, vertical_spacing=0.25 * (1/num_charts), row_heights=row_heights)
 
@@ -171,7 +160,8 @@ class VisualizeRollEstimation:
             row += 1
 
         # Add manual legend entries in reverse order
-        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='red'), name='Wounds', showlegend=True))
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='#f7362d'), name='Morale Wounds', showlegend=True))
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='#ff5f57'), name='Hit Wounds', showlegend=True))
         fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='yellow'), name='Hits', showlegend=True))
         fig.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='green'), name='Total Dice', showlegend=True))
 
