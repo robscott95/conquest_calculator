@@ -198,18 +198,18 @@ class VisualizeRollEstimation:
 
         return fig
 
-
     
     def visualize_simulated_discrete_and_cumulative_distributions(self, mode):
-        if mode == "hits":
+        if mode == "hits_attack":
+            #TODO: Remember about auto inspire after charge
             target = self.data.target_to_hit
             title = f"To Hit | Target: {target})"
             simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
-        elif mode == "defense":
+        elif mode.startswith("defense"):
             target = self.data.target_defense
             title = f"Defense | Target: {target}"
             simulation_results = self.stats.simulate_rolls_by_type(self.data, mode)
-        elif mode == "morale":
+        elif mode.startswith("morale"):
             if self.data.encounter_params['action_type'] == "Volley":
                 target = 6
             else:
@@ -224,7 +224,6 @@ class VisualizeRollEstimation:
             target = self.data.target_input_stands
             title = f"Stands Killed | Stands: {target}"
             simulation_results = self.stats.simulate_rolls_for_stands_killed(self.data)
-        # elif mode == "charge"
 
         if mode in ["wounds", "stands_killed"]:
             x = simulation_results["full_range"]
@@ -371,7 +370,13 @@ class VisualizeRollEstimation:
                             specs=[[{"secondary_y": True}, {"secondary_y": True}, {"secondary_y": True}]],
                             horizontal_spacing=0.05)  # Adjust spacing as needed
 
-        modes = ["hits", "defense", "morale"]
+        modes = ["hits_attack", "defense", "morale"]
+
+        if self.data.encounter_params['action_type'] in ["Clash", "Volley"]:
+            modes = ["hits_attack", "defense_attack", "morale_attack"]
+        elif self.data.encounter_params['action_type'] == "Charge":
+            modes = ["hits_charge", "defense_charge", "morale_charge"]
+            
         
         discrete_y_range_max = 0
         for i, mode in enumerate(modes, start=1):

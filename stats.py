@@ -121,18 +121,34 @@ class Stats:
         return results
     
     def get_simulation_params(self, data, mode):
-        if mode == "hits":
+        if mode == "hits_attack":
             reroll_params = data._get_rerolls_dict_hits()
-            roll_mod_params = data._get_roll_mods_dict_hits()
+            roll_mod_params = data._get_roll_mods_dict_impact_hits()
             total_number_of_dice = data.active_number_of_attacks
             target = data.target_to_hit
 
-        elif mode == "defense":
+            # TODO: How to combine the data of charge and clash?
+            # Basically this function is the root of the decision
+            # and I want to keep the mechanism of "hits" calculating everything
+            # so that would mean minimal changes i hope.
+
+            # maybe in simulate_rolls_by_type id add an if for the type of 
+            # encounter param? right now its only modes, which work neat
+            # but by adding if if clash or if charge or if charge and clash
+            # then maybe I could refer to previous results or somehow combine them??
+
+            # But here I have the params for it, so it'll also need to be modified in here.
+        elif mode == "hits_charge":
+            reroll_params = data._get_rerolls_dict_impact_hits()
+            roll_mod_params = data._get_roll_mods_dict_impact_hits()
+            total_number_of_dice = data.active_number_of_impact_attacks
+            target = data.target_to_hit_charge
+        elif mode.startswith("defense"):
             reroll_params = data._get_rerolls_dict_defense()
             roll_mod_params = data._get_roll_mods_dict_defense()
             total_number_of_dice = data.expected_hits
             target = data.target_defense
-        elif mode == "morale":
+        elif mode.startswith("morale"):
             reroll_params = data._get_rerolls_dict_morale()
             roll_mod_params = {} # TODO CHANGE
             total_number_of_dice = data.expected_wounds_from_hits
@@ -141,24 +157,18 @@ class Stats:
             else:
                 target = data.target_resolve
 
-        elif mode == "charge":
-            reroll_params = data._get_rerolls_dict_charge()
-            roll_mod_params = data._get_roll_mods_dict_charge()
-            total_number_of_dice = data.active_number_of_impact_attacks  
-            target = data.target_to_hit
-
         return reroll_params, roll_mod_params, total_number_of_dice, target
 
 
     def simulate_rolls_by_type(self, data, mode, inner=False):
         reroll_params, roll_mod_params, total_number_of_dice, target = self.get_simulation_params(data, mode)
         previous_simulation_results = None
-        if mode == "defense":
+        if mode.startswith("defense"):
             # For 'defense', fetch results from 'hits'
-            previous_mode = "hits"
+            previous_mode = "hits_attack"
             previous_simulation_results = self.simulate_rolls_by_type(data, previous_mode, inner=True)
     
-        elif mode == "morale":
+        elif mode.startswith("morale"):
             # For 'morale', ensure we fetch results from 'defense'
             # This is critical: 'defense' results should be based on 'hits', as handled in the 'defense' branch above
             previous_mode = "defense"
@@ -176,7 +186,7 @@ class Stats:
         
         # Aggregate results based on the distribution of previous phase outcomes
         # use succcess simulation results for hits while fails for morale. 
-        results_type = "success" if mode == "defense" else "fails"
+        results_type = "success" if mode.startswith("defense") else "fails"
         # Basically go through the previous simulation results and simulate for each outcome
         if previous_simulation_results:
             for outcome, probability in zip(previous_simulation_results[results_type]["full_range"], previous_simulation_results[results_type]["discrete_probabilities"]):

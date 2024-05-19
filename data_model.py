@@ -177,10 +177,20 @@ class EngagementDataModel:
     def target_to_hit(self):
         target_to_hit = self.active_input_target_value
         if self.active_input_special_abilities['is_inspired']['value']:
-            if target_to_hit+1 > 4:
-                self.active_input_special_abilities['is_to_hits_reroll_6s']['value'] = True
-            else:
-                target_to_hit += 1
+            target_to_hit += 1
+        
+        if target_to_hit >= 6:
+            self.active_input_special_abilities['is_to_hits_reroll_6s']['value'] = True
+        return min(target_to_hit, 5)
+    
+    @property
+    def target_to_hit_charge(self):
+        target_to_hit = self.active_input_target_value
+        if self.active_input_special_abilities['is_inspired']['value']:
+            target_to_hit += 1
+
+        if target_to_hit >= 6:
+            self.active_input_special_abilities['is_to_hits_reroll_6s']['value'] = True
         return min(target_to_hit, 5)
     
     @property
